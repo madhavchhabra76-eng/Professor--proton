@@ -1,30 +1,29 @@
 import streamlit as st
-import google.generativeai as genai
+from groq import Groq
 
 # -----------------------------------------------------------
-# PROFESSOR PROTON - FINAL VERSION
+# PROFESSOR PROTON - HIGH SPEED BUILD (GROQ)
 # -----------------------------------------------------------
 
 st.set_page_config(page_title="Professor Proton", page_icon="⚛️")
 
-# 1. SETUP GOOGLE AI
-if "GOOGLE_API_KEY" in st.secrets:
-    genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
-    # I changed this to the model we found in your Green List
-    model = genai.GenerativeModel('gemini-2.0-flash-exp')
+# 1. SETUP AI CLIENT
+if "GROQ_API_KEY" in st.secrets:
+    client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 else:
-    st.error("Error: API Key is missing. Check Streamlit Secrets.")
+    st.error("Error: API Key is missing. Please update Secrets.")
     st.stop()
 
-# 2. UI SETUP
+# 2. UI SETUP (Custom Branding)
 st.title("👨‍🏫 Professor Proton")
-st.caption("Powered by Gemini 2.0 Flash ⚡")
+st.caption("Your Personal AI Science Tutor") 
+# ^^^ No "Powered by" text here. Clean and professional.
 
-st.sidebar.header("Settings")
+st.sidebar.header("Configuration")
 selected_class = st.sidebar.selectbox("Class", [6, 7, 8, 9, 10])
 language = st.sidebar.radio("Language", ["English", "Punjabi"])
 
-if st.sidebar.button("Clear History"):
+if st.sidebar.button("Clear Chat"):
     st.session_state.messages = []
     st.rerun()
 
@@ -61,11 +60,16 @@ if user_input:
             4. If Punjabi: Use Gurmukhi script.
             """
             
-            response = model.generate_content(prompt)
-            final_response = response.text
+            # Using Llama 3 (Fastest Model)
+            chat_completion = client.chat.completions.create(
+                messages=[{"role": "user", "content": prompt}],
+                model="llama3-8b-8192", 
+            )
+            
+            final_response = chat_completion.choices[0].message.content
             
         except Exception as e:
-            final_response = f"Error: {str(e)}"
+            final_response = f"System Error: {str(e)}"
 
     # Show Answer
     st.session_state.messages.append({"role": "assistant", "text": final_response})
