@@ -2,7 +2,7 @@ import streamlit as st
 from groq import Groq
 
 # -----------------------------------------------------------
-# PROFESSOR PROTON - HIGH SPEED BUILD (GROQ)
+# PROFESSOR PROTON - LATEST GROQ BUILD
 # -----------------------------------------------------------
 
 st.set_page_config(page_title="Professor Proton", page_icon="⚛️")
@@ -14,10 +14,9 @@ else:
     st.error("Error: API Key is missing. Please update Secrets.")
     st.stop()
 
-# 2. UI SETUP (Custom Branding)
+# 2. UI SETUP
 st.title("👨‍🏫 Professor Proton")
 st.caption("Your Personal AI Science Tutor") 
-# ^^^ No "Powered by" text here. Clean and professional.
 
 st.sidebar.header("Configuration")
 selected_class = st.sidebar.selectbox("Class", [6, 7, 8, 9, 10])
@@ -60,10 +59,10 @@ if user_input:
             4. If Punjabi: Use Gurmukhi script.
             """
             
-            # Using Llama 3 (Fastest Model)
+            # UPDATED MODEL NAME HERE:
             chat_completion = client.chat.completions.create(
                 messages=[{"role": "user", "content": prompt}],
-                model="llama3-8b-8192", 
+                model="llama-3.3-70b-versatile", 
             )
             
             final_response = chat_completion.choices[0].message.content
