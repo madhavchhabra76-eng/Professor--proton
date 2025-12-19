@@ -2,22 +2,23 @@ import streamlit as st
 import google.generativeai as genai
 
 # -----------------------------------------------------------
-# PROFESSOR PROTON - SMART MODE (v4)
+# PROFESSOR PROTON - SMART MODE (Debug Version)
 # -----------------------------------------------------------
 
 st.set_page_config(page_title="Professor Proton", page_icon="⚛️")
 
 # 1. SETUP GOOGLE AI
+# I check if the key exists to prevent crashing
 if "GOOGLE_API_KEY" in st.secrets:
     genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
     model = genai.GenerativeModel('gemini-1.5-flash')
 else:
-    st.error("Error: API Key is missing. Check Streamlit Secrets.")
+    st.error("Error: API Key is missing. Please check Streamlit Secrets.")
     st.stop()
 
 # 2. UI SETUP
 st.title("👨‍🏫 Professor Proton")
-st.caption("Now powered by Gemini Knowledge 🧠")
+st.caption("Powered by Gemini Knowledge 🧠")
 
 st.sidebar.header("Settings")
 selected_class = st.sidebar.selectbox("Class", [6, 7, 8, 9, 10])
@@ -31,13 +32,16 @@ if st.sidebar.button("Clear History"):
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
+# Display old messages
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.write(msg["text"])
 
+# User Input
 user_input = st.chat_input("Ask any Science question...")
 
 if user_input:
+    # Show user message
     st.session_state.messages.append({"role": "user", "text": user_input})
     with st.chat_message("user"):
         st.write(user_input)
@@ -45,8 +49,7 @@ if user_input:
     # GENERATE ANSWER
     with st.spinner("Professor Proton is thinking..."):
         
-        # This is the "Smart Prompt" 
-        # It allows the AI to use its own knowledge, but tells it to be strict.
+        # This prompt forces the AI to check the syllabus virtually
         prompt = f"""
         Act as a strict Science teacher for Class {selected_class} in India (NCERT Syllabus).
         
@@ -63,7 +66,8 @@ if user_input:
             response = model.generate_content(prompt)
             final_response = response.text
         except Exception as e:
-            final_response = "Error: Could not connect to Google AI."
+            # THIS IS THE NEW PART: It will show us the real error code
+            final_response = f"DEBUG ERROR: {str(e)}"
 
     # Show Answer
     st.session_state.messages.append({"role": "assistant", "text": final_response})
