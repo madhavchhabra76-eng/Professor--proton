@@ -2,7 +2,7 @@ import streamlit as st
 import google.generativeai as genai
 
 # -----------------------------------------------------------
-# PROFESSOR PROTON - FINAL STABLE BUILD
+# PROFESSOR PROTON - FINAL VERSION
 # -----------------------------------------------------------
 
 st.set_page_config(page_title="Professor Proton", page_icon="⚛️")
@@ -10,15 +10,15 @@ st.set_page_config(page_title="Professor Proton", page_icon="⚛️")
 # 1. SETUP GOOGLE AI
 if "GOOGLE_API_KEY" in st.secrets:
     genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
-    # switched to 1.5-flash (The Standard Free Model)
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    # I changed this to the model we found in your Green List
+    model = genai.GenerativeModel('gemini-2.0-flash-exp')
 else:
     st.error("Error: API Key is missing. Check Streamlit Secrets.")
     st.stop()
 
 # 2. UI SETUP
 st.title("👨‍🏫 Professor Proton")
-st.caption("Powered by Gemini 1.5 Flash ⚡")
+st.caption("Powered by Gemini 2.0 Flash ⚡")
 
 st.sidebar.header("Settings")
 selected_class = st.sidebar.selectbox("Class", [6, 7, 8, 9, 10])
@@ -65,11 +65,7 @@ if user_input:
             final_response = response.text
             
         except Exception as e:
-            # Friendly error handling
-            if "429" in str(e):
-                final_response = "Error: Too many requests. Please wait a moment."
-            else:
-                final_response = f"Error: {str(e)}"
+            final_response = f"Error: {str(e)}"
 
     # Show Answer
     st.session_state.messages.append({"role": "assistant", "text": final_response})
