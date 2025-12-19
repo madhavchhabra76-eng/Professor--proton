@@ -3,49 +3,83 @@ from groq import Groq
 import time
 
 # -----------------------------------------------------------
-# PROFESSOR PROTON - MOBILE READY EDITION 📱
+# PROFESSOR PROTON - PROFESSIONAL MOBILE EDITION 📱
 # -----------------------------------------------------------
 
 st.set_page_config(
     page_title="Professor Proton", 
-    page_icon="🧪", 
+    page_icon="⚛️", 
     layout="centered"
 )
 
-# --- 1. FUN CSS STYLING (Mobile Optimized) ---
+# --- 1. CSS STYLING (High Contrast & Professional) ---
 st.markdown("""
 <style>
-    /* Fun Background */
+    /* Background - Professional Soft Gradient */
     .stApp {
-        background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
+        background: linear-gradient(180deg, #f3f4f6 0%, #ffffff 100%);
     }
     
-    /* Hide standard header */
+    /* Hide standard header/footer */
     header {visibility: hidden;}
+    footer {visibility: hidden;}
     
-    /* Title Styling */
+    /* Title Styling - Clean & Modern */
     h1 {
-        font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
-        color: #4a4e69;
-        text-shadow: 2px 2px 0px #ffffff;
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        color: #1f2937;
+        font-weight: 700;
         text-align: center;
+        margin-bottom: 0px;
     }
     
-    /* Chat Bubbles */
-    .stChatMessage {
-        background-color: rgba(255, 255, 255, 0.9);
-        border-radius: 20px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        padding: 10px;
-        margin-bottom: 10px;
+    /* Text Visibility Fix (Force Black Text) */
+    p, .stMarkdown, h1, h2, h3 {
+        color: #1f2937 !important;
     }
     
-    /* Make the Settings Box stand out */
+    /* Settings Box - Clean Card Style */
     [data-testid="stExpander"] {
-        background-color: white;
-        border-radius: 15px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        background-color: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        color: #000000 !important;
     }
+    
+    /* Fix text inside the expander specifically */
+    .streamlit-expanderContent p {
+        color: #000000 !important;
+        text-align: left !important;
+    }
+    
+    /* Dropdown/Input Styling */
+    .stSelectbox div[data-baseweb="select"] > div {
+        background-color: #f9fafb;
+        color: black;
+        border-radius: 8px;
+    }
+
+    /* Chat Bubbles - Professional Alignment */
+    .stChatMessage {
+        background-color: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 15px;
+        margin-bottom: 10px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    
+    /* User Bubble (Right Sideish feel) */
+    [data-testid="chatAvatarIcon-user"] {
+        background-color: #3b82f6;
+    }
+    
+    /* Bot Bubble */
+    [data-testid="chatAvatarIcon-assistant"] {
+        background-color: #10b981;
+    }
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -53,79 +87,72 @@ st.markdown("""
 if "GROQ_API_KEY" in st.secrets:
     client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 else:
-    st.error("⚠️ Ask your teacher to check the API Key!")
+    st.error("⚠️ API Key Error. Check Secrets.")
     st.stop()
 
-# --- 3. MAIN UI (No Sidebar needed) ---
+# --- 3. UI LAYOUT ---
 
-# Title Section
-st.title("Professor Proton 🧪")
-st.markdown("<h4 style='text-align: center; color: #4a4e69;'>Your AI Science Buddy! 🤖</h4>", unsafe_allow_html=True)
+# Header
+st.title("Professor Proton ⚛️")
+st.markdown("<div style='text-align: center; color: #6b7280; margin-bottom: 20px;'>Syllabus-Aligned AI Tutor</div>", unsafe_allow_html=True)
 
-# --- SETTINGS MOVED HERE (Always Visible) ---
-with st.expander("⚙️ CLICK HERE to Change Class & Language", expanded=True):
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.markdown("**🎓 Class Level**")
-        selected_class = st.selectbox("Select Class", [6, 7, 8, 9, 10], label_visibility="collapsed")
+# Settings (Expander)
+with st.expander("⚙️ Configure Settings", expanded=True):
+    # Using columns for better layout
+    c1, c2 = st.columns(2)
+    with c1:
+        st.caption("Select Class Level")
+        selected_class = st.selectbox("Class", [6, 7, 8, 9, 10], label_visibility="collapsed")
+    with c2:
+        st.caption("Select Language")
+        language = st.radio("Lang", ["English", "Punjabi"], label_visibility="collapsed")
         
-    with col2:
-        st.markdown("**🗣️ Language**")
-        language = st.radio("Select Language", ["English", "Punjabi"], label_visibility="collapsed")
-
-    if st.button("🧹 Clear Chat History", use_container_width=True):
+    if st.button("Refresh Chat ⟳", use_container_width=True):
         st.session_state.messages = []
         st.rerun()
 
 st.markdown("---")
 
-# --- 4. CHAT LOGIC ---
+# --- 4. CHAT ENGINE ---
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Display Chat History
+# Display History
 for msg in st.session_state.messages:
-    if msg["role"] == "user":
-        avatar = "🎒"
-    else:
-        avatar = "🤖" 
-        
-    with st.chat_message(msg["role"], avatar=avatar):
+    icon = "🧑‍🎓" if msg["role"] == "user" else "🤖"
+    with st.chat_message(msg["role"], avatar=icon):
         st.write(msg["text"])
 
-# User Input
-user_input = st.chat_input("Ask me anything about Science! 🚀")
+# Input
+user_input = st.chat_input("Ask a question...")
 
 if user_input:
-    # 1. Show User Message
+    # 1. User Message
     st.session_state.messages.append({"role": "user", "text": user_input})
-    with st.chat_message("user", avatar="🎒"):
+    with st.chat_message("user", avatar="🧑‍🎓"):
         st.write(user_input)
 
-    # 2. Generate AI Response
+    # 2. AI Logic
     with st.chat_message("assistant", avatar="🤖"):
-        message_placeholder = st.empty()
+        placeholder = st.empty()
         full_response = ""
         
-        # Language Logic
-        if language == "English":
-            lang_instruction = "Answer strictly in English. Do not use any other language."
-        else:
-            lang_instruction = "Answer in Punjabi using Gurmukhi script."
+        # Language Rule
+        lang_rule = "Answer strictly in English." if language == "English" else "Answer in Punjabi (Gurmukhi)."
 
-        with st.spinner("Thinking... ⚡"):
+        with st.spinner("Thinking..."):
             try:
+                # Prompt Engineering
                 prompt = f"""
-                Act as a friendly Science teacher for Class {selected_class} (NCERT India).
-                User Question: "{user_input}"
-                INSTRUCTIONS:
-                1. CHECK: Is this topic in Class {selected_class} syllabus?
-                2. IF NO: Say "Oops! That's not in our class syllabus yet!"
-                3. IF YES: Explain simply.
-                4. LANGUAGE RULE: {lang_instruction}
-                FORMAT: Use emojis and bullet points.
+                Act as a Science teacher for Class {selected_class} (NCERT India).
+                Question: "{user_input}"
+                Rules:
+                1. Check if valid for Class {selected_class} syllabus.
+                2. If NO: Politely decline.
+                3. If YES: Explain clearly.
+                4. {lang_rule}
+                Format: Use bullet points.
                 """
                 
                 completion = client.chat.completions.create(
@@ -133,18 +160,17 @@ if user_input:
                     model="llama-3.3-70b-versatile",
                     temperature=0.3
                 )
-                response_text = completion.choices[0].message.content
                 
-                # Typing Animation
-                for chunk in response_text.split(" "):
-                    full_response += chunk + " "
-                    time.sleep(0.03) 
-                    message_placeholder.markdown(full_response + "▌")
-                message_placeholder.markdown(full_response)
+                # Streaming Effect
+                response = completion.choices[0].message.content
+                for word in response.split():
+                    full_response += word + " "
+                    time.sleep(0.02)
+                    placeholder.markdown(full_response + "▌")
+                placeholder.markdown(full_response)
                 
             except Exception as e:
-                response_text = "⚠️ My brain is tired! Try again."
-                message_placeholder.markdown(response_text)
+                placeholder.error("Connection Error. Please try again.")
+                response = "Error"
 
-    # Save to memory
-    st.session_state.messages.append({"role": "assistant", "text": response_text})
+    st.session_state.messages.append({"role": "assistant", "text": full_response})
