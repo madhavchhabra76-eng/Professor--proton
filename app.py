@@ -11,7 +11,7 @@ st.set_page_config(page_title="Professor Proton", page_icon="⚛️")
 # I check if the key exists to prevent crashing
 if "GOOGLE_API_KEY" in st.secrets:
     genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    model = genai.GenerativeModel('gemini-pro')
 else:
     st.error("Error: API Key is missing. Please check Streamlit Secrets.")
     st.stop()
