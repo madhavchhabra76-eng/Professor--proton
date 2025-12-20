@@ -3,53 +3,63 @@ from groq import Groq
 import time
 
 # -----------------------------------------------------------
-# PROFESSOR PROTON - FINAL VERSION (Fixed Logic + Pro UI)
+# PROFESSOR PROTON - KID FRIENDLY EDITION 🎨
 # -----------------------------------------------------------
 
 st.set_page_config(
     page_title="Professor Proton", 
-    page_icon="⚛️", 
+    page_icon="🧪", 
     layout="centered"
 )
 
-# --- 1. CSS STYLING (The "Apple Design" Look) ---
+# --- 1. FUN CSS STYLING (Duolingo Style) ---
 st.markdown("""
 <style>
-    /* Main Background - Subtle Gradient */
+    /* Fun Background */
     .stApp {
-        background: linear-gradient(to bottom right, #ffffff, #f0f2f6);
+        background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
     }
     
-    /* Hide standard Streamlit header */
+    /* Hide standard header */
     header {visibility: hidden;}
     
-    /* Custom Chat Message Styling */
-    .stChatMessage {
-        background-color: white;
-        border-radius: 15px;
-        padding: 15px;
-        margin-bottom: 10px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        border: 1px solid #e0e0e0;
-    }
-    
-    /* Sidebar Styling */
-    [data-testid="stSidebar"] {
-        background-color: #f8f9fa;
-        border-right: 1px solid #dee2e6;
-    }
-    
-    /* Title Font */
+    /* Title Styling - Big & Bubbly */
     h1 {
-        color: #1a1a1a;
-        font-weight: 700;
-        letter-spacing: -1px;
+        font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+        color: #4a4e69;
+        text-shadow: 2px 2px 0px #ffffff;
     }
     
-    /* Input Box Styling */
-    .stTextInput input {
+    /* Chat Bubbles - Round & Friendly */
+    .stChatMessage {
+        background-color: rgba(255, 255, 255, 0.85);
         border-radius: 20px;
-        border: 1px solid #d1d5db;
+        border: 2px solid #ffffff;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+    
+    /* Sidebar - Clean White */
+    [data-testid="stSidebar"] {
+        background-color: #ffffff;
+        border-right: 3px solid #c9d6df;
+    }
+    
+    /* Input Box - Pill Shape */
+    .stTextInput input {
+        border-radius: 25px;
+        border: 2px solid #8ec5fc;
+        padding: 10px;
+    }
+    
+    /* Buttons */
+    div.stButton > button {
+        border-radius: 20px;
+        background-color: #ff9a9e;
+        color: white;
+        border: none;
+        font-weight: bold;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -58,33 +68,34 @@ st.markdown("""
 if "GROQ_API_KEY" in st.secrets:
     client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 else:
-    st.error("⚠️ API Key Missing. Please check secrets.")
+    st.error("⚠️ Ask your teacher to check the API Key!")
     st.stop()
 
-# --- 3. SIDEBAR (CONTROLS) ---
+# --- 3. SIDEBAR (SIMPLE & CLEAN) ---
 with st.sidebar:
-    st.image("https://img.icons8.com/fluency/96/atom.png", width=70)
+    st.image("https://img.icons8.com/clouds/100/test-tube.png", width=100)
     st.title("Settings")
     
-    st.markdown("---")
-    selected_class = st.selectbox("🎓 Class Level", [6, 7, 8, 9, 10])
-    language = st.radio("🗣️ Language", ["English", "Punjabi"])
+    st.markdown("### 🎓 Pick Your Class")
+    selected_class = st.selectbox("Class Level", [6, 7, 8, 9, 10], label_visibility="collapsed")
+    
+    st.markdown("### 🗣️ Language")
+    language = st.radio("Language", ["English", "Punjabi"], label_visibility="collapsed")
     
     st.markdown("---")
-    # Fake System Status for MIT Credibility
-    st.caption(f"**System Status:**\n\n🟢 Model: Llama-3.3-70b\n\n⚡ Latency: 42ms\n\n🛡️ Safety: Active")
-    
-    if st.button("🗑️ Clear Chat", type="primary"):
+    if st.button("🧹 Clear Chat"):
         st.session_state.messages = []
         st.rerun()
 
 # --- 4. MAIN INTERFACE ---
 
-# "Hero" Header
+# Fun Header
 col1, col2 = st.columns([0.2, 0.8])
+with col1:
+    st.write("") # Spacer
 with col2:
-    st.title("Professor Proton")
-    st.caption("The Syllabus-Aligned AI Tutor")
+    st.title("Professor Proton 🧪")
+    st.markdown("**Your AI Science Buddy!**")
 
 st.markdown("---")
 
@@ -93,66 +104,70 @@ if "messages" not in st.session_state:
     st.session_state.messages = []
 
 for msg in st.session_state.messages:
-    # Use distinct avatars
-    avatar = "👤" if msg["role"] == "user" else "⚛️"
+    # Fun Avatars
+    if msg["role"] == "user":
+        avatar = "🎒" # Backpack for student
+    else:
+        avatar = "🤖" # Robot for Professor
+        
     with st.chat_message(msg["role"], avatar=avatar):
         st.write(msg["text"])
 
 # User Input
-user_input = st.chat_input("Ask a question (e.g., 'What is Photosynthesis?')")
+user_input = st.chat_input("Ask me anything about Science! 🚀")
 
 if user_input:
     # 1. Show User Message
     st.session_state.messages.append({"role": "user", "text": user_input})
-    with st.chat_message("user", avatar="👤"):
+    with st.chat_message("user", avatar="🎒"):
         st.write(user_input)
 
     # 2. Generate AI Response
-    with st.chat_message("assistant", avatar="⚛️"):
+    with st.chat_message("assistant", avatar="🤖"):
         message_placeholder = st.empty()
         full_response = ""
         
-        # --- LOGIC FIX: DYNAMIC PROMPT ---
-        # We define the language rule BEFORE the prompt so they don't mix.
+        # --- STRICT LANGUAGE LOGIC (Hidden from UI) ---
         if language == "English":
             lang_instruction = "Answer strictly in English. Do not use any other language."
         else:
             lang_instruction = "Answer in Punjabi using Gurmukhi script."
 
-        with st.spinner("Searching NCERT Database..."):
+        with st.spinner("Checking the Science book... 📖"):
             try:
                 prompt = f"""
-                Act as a strict Science teacher for Class {selected_class} (NCERT Syllabus India).
+                Act as a friendly but educational Science teacher for Class {selected_class} (NCERT India).
                 
                 User Question: "{user_input}"
                 
                 INSTRUCTIONS:
                 1. CHECK: Is this topic in the Class {selected_class} Science syllabus?
-                2. IF NO: Refuse politely.
-                3. IF YES: Explain the concept simply.
+                2. IF NO: Say "Oops! That's not in our class syllabus yet!" politely.
+                3. IF YES: Explain it simply and clearly.
                 4. LANGUAGE RULE: {lang_instruction}
                 
                 FORMAT:
+                - Use emojis to make it fun.
                 - Use bullet points.
-                - Keep it short and easy to understand.
+                - Keep it simple for a {selected_class}th grader.
                 """
                 
                 completion = client.chat.completions.create(
                     messages=[{"role": "user", "content": prompt}],
                     model="llama-3.3-70b-versatile",
-                    temperature=0.3 # Lower temperature = Less hallucination/mixing
+                    temperature=0.3
                 )
                 response_text = completion.choices[0].message.content
                 
-                # Typing Animation Effect
-                for chunk in response_text.split(" "): # Split by words (safer)
+                # Typing Animation
+                for chunk in response_text.split(" "):
                     full_response += chunk + " "
-                    time.sleep(0.02) 
+                    time.sleep(0.03) 
                     message_placeholder.markdown(full_response + "▌")
                 message_placeholder.markdown(full_response)
                 
             except Exception as e:
-                response_text = f"❌ System Error: {str(e)}"
+                response_text = "⚠️ My brain is tired! Try again."
                 message_placeholder.markdown(response_text)
 
     # Save to memory
