@@ -7,7 +7,7 @@ import io
 from PIL import Image
 
 # -----------------------------------------------------------
-# PROFESSOR PROTON - STABLE DIFFUSION 1.5 EDITION 🛡️
+# PROFESSOR PROTON - FINAL URL FIX 🎯
 # -----------------------------------------------------------
 
 st.set_page_config(page_title="Professor Proton", page_icon="⚛️", layout="centered")
@@ -37,14 +37,14 @@ if "HF_API_KEY" not in st.secrets:
 
 client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
-# --- 3. IMAGE GENERATOR (Using Reliable v1.5 Model) ---
+# --- 3. IMAGE GENERATOR (Fixed URL + Reliable Model) ---
 
 def generate_image(prompt_text):
     if "HF_API_KEY" not in st.secrets: return None
     
-    # 🚨 CHANGED MODEL: Using 'runwayml/stable-diffusion-v1-5' (Very Reliable)
-    # We also keep the 'router' URL which is the new standard.
-    API_URL = "https://router.huggingface.co/models/runwayml/stable-diffusion-v1-5"
+    # 🚨 THE FIX: Added '/hf-inference' to the URL
+    # We use 'stable-diffusion-v1-5' because it is 100% reliable on free tier.
+    API_URL = "https://router.huggingface.co/hf-inference/models/runwayml/stable-diffusion-v1-5"
     headers = {"Authorization": f"Bearer {st.secrets['HF_API_KEY']}"}
     payload = {"inputs": f"educational science textbook diagram, clear labels, white background, high quality, accurate: {prompt_text}"}
     
@@ -56,12 +56,11 @@ def generate_image(prompt_text):
                 image = Image.open(io.BytesIO(response.content))
                 return image
             elif response.status_code == 503:
-                # If model is sleeping, wait 10s
-                st.toast("💤 Waking up the AI Artist... (10s)")
+                st.toast("💤 Waking up AI... (10s)")
                 time.sleep(10) 
                 continue 
             else:
-                st.error(f"HF Error: {response.status_code} - {response.text}")
+                st.error(f"HF Error: {response.status_code}")
                 return None
                 
         except Exception as e:
