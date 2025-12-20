@@ -3,7 +3,7 @@ from groq import Groq
 import time
 
 # -----------------------------------------------------------
-# PROFESSOR PROTON - KID FRIENDLY EDITION 🎨
+# PROFESSOR PROTON - MOBILE READY EDITION 📱
 # -----------------------------------------------------------
 
 st.set_page_config(
@@ -12,7 +12,7 @@ st.set_page_config(
     layout="centered"
 )
 
-# --- 1. FUN CSS STYLING (Duolingo Style) ---
+# --- 1. FUN CSS STYLING (Mobile Optimized) ---
 st.markdown("""
 <style>
     /* Fun Background */
@@ -23,43 +23,28 @@ st.markdown("""
     /* Hide standard header */
     header {visibility: hidden;}
     
-    /* Title Styling - Big & Bubbly */
+    /* Title Styling */
     h1 {
         font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
         color: #4a4e69;
         text-shadow: 2px 2px 0px #ffffff;
+        text-align: center;
     }
     
-    /* Chat Bubbles - Round & Friendly */
+    /* Chat Bubbles */
     .stChatMessage {
-        background-color: rgba(255, 255, 255, 0.85);
+        background-color: rgba(255, 255, 255, 0.9);
         border-radius: 20px;
-        border: 2px solid #ffffff;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        padding: 15px;
-        margin-bottom: 15px;
-    }
-    
-    /* Sidebar - Clean White */
-    [data-testid="stSidebar"] {
-        background-color: #ffffff;
-        border-right: 3px solid #c9d6df;
-    }
-    
-    /* Input Box - Pill Shape */
-    .stTextInput input {
-        border-radius: 25px;
-        border: 2px solid #8ec5fc;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         padding: 10px;
+        margin-bottom: 10px;
     }
     
-    /* Buttons */
-    div.stButton > button {
-        border-radius: 20px;
-        background-color: #ff9a9e;
-        color: white;
-        border: none;
-        font-weight: bold;
+    /* Make the Settings Box stand out */
+    [data-testid="stExpander"] {
+        background-color: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
     }
 </style>
 """, unsafe_allow_html=True)
@@ -71,44 +56,41 @@ else:
     st.error("⚠️ Ask your teacher to check the API Key!")
     st.stop()
 
-# --- 3. SIDEBAR (SIMPLE & CLEAN) ---
-with st.sidebar:
-    st.image("https://img.icons8.com/clouds/100/test-tube.png", width=100)
-    st.title("Settings")
+# --- 3. MAIN UI (No Sidebar needed) ---
+
+# Title Section
+st.title("Professor Proton 🧪")
+st.markdown("<h4 style='text-align: center; color: #4a4e69;'>Your AI Science Buddy! 🤖</h4>", unsafe_allow_html=True)
+
+# --- SETTINGS MOVED HERE (Always Visible) ---
+with st.expander("⚙️ CLICK HERE to Change Class & Language", expanded=True):
+    col1, col2 = st.columns(2)
     
-    st.markdown("### 🎓 Pick Your Class")
-    selected_class = st.selectbox("Class Level", [6, 7, 8, 9, 10], label_visibility="collapsed")
-    
-    st.markdown("### 🗣️ Language")
-    language = st.radio("Language", ["English", "Punjabi"], label_visibility="collapsed")
-    
-    st.markdown("---")
-    if st.button("🧹 Clear Chat"):
+    with col1:
+        st.markdown("**🎓 Class Level**")
+        selected_class = st.selectbox("Select Class", [6, 7, 8, 9, 10], label_visibility="collapsed")
+        
+    with col2:
+        st.markdown("**🗣️ Language**")
+        language = st.radio("Select Language", ["English", "Punjabi"], label_visibility="collapsed")
+
+    if st.button("🧹 Clear Chat History", use_container_width=True):
         st.session_state.messages = []
         st.rerun()
 
-# --- 4. MAIN INTERFACE ---
-
-# Fun Header
-col1, col2 = st.columns([0.2, 0.8])
-with col1:
-    st.write("") # Spacer
-with col2:
-    st.title("Professor Proton 🧪")
-    st.markdown("**Your AI Science Buddy!**")
-
 st.markdown("---")
 
-# Chat History
+# --- 4. CHAT LOGIC ---
+
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
+# Display Chat History
 for msg in st.session_state.messages:
-    # Fun Avatars
     if msg["role"] == "user":
-        avatar = "🎒" # Backpack for student
+        avatar = "🎒"
     else:
-        avatar = "🤖" # Robot for Professor
+        avatar = "🤖" 
         
     with st.chat_message(msg["role"], avatar=avatar):
         st.write(msg["text"])
@@ -127,29 +109,23 @@ if user_input:
         message_placeholder = st.empty()
         full_response = ""
         
-        # --- STRICT LANGUAGE LOGIC (Hidden from UI) ---
+        # Language Logic
         if language == "English":
             lang_instruction = "Answer strictly in English. Do not use any other language."
         else:
             lang_instruction = "Answer in Punjabi using Gurmukhi script."
 
-        with st.spinner("Checking the Science book... 📖"):
+        with st.spinner("Thinking... ⚡"):
             try:
                 prompt = f"""
-                Act as a friendly but educational Science teacher for Class {selected_class} (NCERT India).
-                
+                Act as a friendly Science teacher for Class {selected_class} (NCERT India).
                 User Question: "{user_input}"
-                
                 INSTRUCTIONS:
-                1. CHECK: Is this topic in the Class {selected_class} Science syllabus?
-                2. IF NO: Say "Oops! That's not in our class syllabus yet!" politely.
-                3. IF YES: Explain it simply and clearly.
+                1. CHECK: Is this topic in Class {selected_class} syllabus?
+                2. IF NO: Say "Oops! That's not in our class syllabus yet!"
+                3. IF YES: Explain simply.
                 4. LANGUAGE RULE: {lang_instruction}
-                
-                FORMAT:
-                - Use emojis to make it fun.
-                - Use bullet points.
-                - Keep it simple for a {selected_class}th grader.
+                FORMAT: Use emojis and bullet points.
                 """
                 
                 completion = client.chat.completions.create(
