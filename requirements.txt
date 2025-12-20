@@ -2,4 +2,4 @@ streamlit
 groq
 requests
 Pillow
-huggingface_hub
+
