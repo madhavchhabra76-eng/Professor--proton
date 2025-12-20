@@ -7,7 +7,7 @@ from PIL import Image
 import io
 
 # -----------------------------------------------------------
-# PROFESSOR PROTON - PUBLIC MODEL FIX 🔓
+# PROFESSOR PROTON - PUBLIC MODEL FIX (v1.5) 🔓
 # -----------------------------------------------------------
 
 st.set_page_config(page_title="Professor Proton", page_icon="⚛️", layout="centered")
