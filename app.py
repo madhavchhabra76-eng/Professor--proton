@@ -7,7 +7,7 @@ from PIL import Image
 import io
 
 # -----------------------------------------------------------
-# PROFESSOR PROTON - PUBLIC MODEL FIX (v1.5) 🔓
+# PROFESSOR PROTON - BULLETPROOF EDITION 🛡️
 # -----------------------------------------------------------
 
 st.set_page_config(page_title="Professor Proton", page_icon="⚛️", layout="centered")
@@ -37,33 +37,49 @@ if "HF_API_KEY" not in st.secrets:
 
 client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
-# --- 3. OFFICIAL IMAGE GENERATOR (Public Model) ---
+# --- 3. ROBUST IMAGE GENERATOR (Tries 3 Models) ---
 
 def generate_image(prompt_text):
     if "HF_API_KEY" not in st.secrets: return None
     
     hf_client = InferenceClient(token=st.secrets["HF_API_KEY"])
     
-    # 🚨 CHANGED MODEL: This one is 100% Public and Free (No legal gate)
-    model_id = "runwayml/stable-diffusion-v1-5"
+    # LIST OF MODELS TO TRY (If one fails, it tries the next)
+    models_to_try = [
+        "runwayml/stable-diffusion-v1-5",     # Standard Public Model
+        "CompVis/stable-diffusion-v1-4",      # Older Reliable Backup
+        "prompthero/openjourney"              # Creative Backup
+    ]
     
-    for i in range(5): 
+    for model in models_to_try:
         try:
+            st.toast(f"🎨 Trying Model: {model}...")
             image = hf_client.text_to_image(
-                f"educational science textbook diagram, white background, clear, high quality: {prompt_text}",
-                model=model_id
+                f"educational science textbook diagram, clear, white background: {prompt_text}",
+                model=model
             )
-            return image
-                
+            return image # Success! Return the image.
+            
         except Exception as e:
-            error_msg = str(e)
-            if "503" in error_msg:
-                st.toast("💤 AI is waking up... (waiting 10s)")
-                time.sleep(10)
-                continue
-            else:
-                st.error(f"Image Error: {error_msg}")
-                return None
+            # If it's a 503 (Loading), wait and retry same model
+            if "503" in str(e):
+                st.toast(f"💤 Model {model} is waking up... waiting 5s")
+                time.sleep(5)
+                # Try one more time on this model
+                try:
+                    image = hf_client.text_to_image(
+                        f"educational science textbook diagram, clear, white background: {prompt_text}",
+                        model=model
+                    )
+                    return image
+                except:
+                    pass # If it fails twice, move to next model
+            
+            # If it's 401/404, just print error and move to next model
+            print(f"Skipping {model} due to error: {e}")
+            continue
+
+    st.error("❌ All models failed. Please check your HF_API_KEY permissions.")
     return None
 
 def stream_section(placeholder, box_class, title, content):
@@ -160,4 +176,4 @@ if "pending_image_prompt" in st.session_state:
                 del st.session_state["pending_image_prompt"]
                 st.rerun()
             else:
-                st.error("Still loading or Error. Try again in 10s.")
+                st.error("All models failed. Check logs.")
