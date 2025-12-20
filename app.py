@@ -3,7 +3,7 @@ from groq import Groq
 import time
 
 # -----------------------------------------------------------
-# PROFESSOR PROTON - STRUCTURED LEARNING EDITION 📝
+# PROFESSOR PROTON - FORMATTING FIX 🛠️
 # -----------------------------------------------------------
 
 st.set_page_config(
@@ -12,38 +12,50 @@ st.set_page_config(
     layout="centered"
 )
 
-# --- 1. CSS FOR READABILITY ---
+# --- 1. CSS (Force Line Breaks) ---
 st.markdown("""
 <style>
-    /* Clean White Background */
+    /* Main Background */
     .stApp {
         background: linear-gradient(180deg, #f8f9fa 0%, #ffffff 100%);
     }
     
-    header, footer {visibility: hidden;}
-    
-    /* Typography Fixes */
-    h1 { color: #1a1a1a; font-family: 'Helvetica Neue', sans-serif; }
-    
-    /* FORCE BLACK TEXT & SPACING */
-    p, li, .stMarkdown {
-        color: #2c3e50 !important;
+    /* Force readable spacing */
+    p, li {
+        color: #1a1a1a !important;
         font-family: 'Segoe UI', sans-serif;
-        line-height: 1.7; /* More space between lines */
+        line-height: 1.8 !important; /* Extra space between lines */
+        margin-bottom: 12px !important; /* Space between paragraphs */
         font-size: 1.1em;
     }
     
-    /* Math Equations Style */
-    .katex { font-size: 1.2em; color: #d63031; }
+    /* Bullet Points Spacing */
+    ul {
+        margin-top: 10px !important;
+        margin-bottom: 10px !important;
+    }
+    
+    /* Math Equations - Make them pop */
+    .katex-display {
+        margin: 20px 0 !important;
+        padding: 10px;
+        background-color: #f8f9fa;
+        border-radius: 5px;
+        border-left: 3px solid #d63031;
+    }
     
     /* Chat Bubbles */
     .stChatMessage {
         background-color: white;
         border: 1px solid #e1e4e8;
-        border-radius: 10px;
+        border-radius: 12px;
         padding: 20px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.03);
     }
+    
+    /* Header/Footer hidden */
+    header, footer {visibility: hidden;}
+    
 </style>
 """, unsafe_allow_html=True)
 
@@ -51,21 +63,21 @@ st.markdown("""
 if "GROQ_API_KEY" in st.secrets:
     client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 else:
-    st.error("API Key Error. Check Secrets.")
+    st.error("API Key Error.")
     st.stop()
 
-# --- 3. HEADER & SETTINGS ---
+# --- 3. UI LAYOUT ---
 st.title("Professor Proton ⚛️")
 st.markdown("<div style='text-align: center; color: #555; margin-bottom: 20px;'>Structured Syllabus Tutor</div>", unsafe_allow_html=True)
 
-with st.expander("⚙️ Session Settings", expanded=True):
+with st.expander("⚙️ Settings", expanded=True):
     c1, c2 = st.columns(2)
     with c1:
         selected_class = st.selectbox("Class Level", [6, 7, 8, 9, 10])
     with c2:
         language = st.radio("Language", ["English", "Punjabi"])
-        
-    if st.button("New Topic ⟳", use_container_width=True):
+    
+    if st.button("Clear Chat", use_container_width=True):
         st.session_state.messages = []
         st.rerun()
 
@@ -81,57 +93,59 @@ for msg in st.session_state.messages:
         st.write(msg["text"])
 
 # Input
-user_input = st.chat_input("Enter a topic (e.g., Force, Photosynthesis)...")
+user_input = st.chat_input("Enter topic (e.g., Photosynthesis)...")
 
 if user_input:
     st.session_state.messages.append({"role": "user", "text": user_input})
     with st.chat_message("user", avatar="🧑‍🎓"):
         st.write(user_input)
 
-    # Response Generation
     with st.chat_message("assistant", avatar="⚛️"):
         placeholder = st.empty()
         full_response = ""
         
-        # LOGIC: Force Structure
-        if language == "English":
-            lang_instruction = "Answer in clear English."
-        else:
-            lang_instruction = "Answer in Punjabi (Gurmukhi). Keep terms in English brackets."
+        # LOGIC
+        lang_rule = "Answer in English." if language == "English" else "Answer in Punjabi (Gurmukhi)."
 
-        with st.spinner("Structuring answer..."):
+        with st.spinner("Structuring..."):
             try:
-                # --- THE STRUCTURED PROMPT ---
+                # --- THE "ANTI-PARAGRAPH" PROMPT ---
                 prompt = f"""
                 Act as a Science Teacher for Class {selected_class} (NCERT India).
                 Topic: "{user_input}"
                 
-                STRICT FORMATTING RULES:
-                1. CHECK SYLLABUS: If not in Class {selected_class}, refuse politely.
-                2. NO PARAGRAPHS: Do not write big blocks of text.
-                3. USE BULLET POINTS: Break down every explanation into points.
-                4. MATH MODE: Write all formulas/equations on a separate line using LaTeX format. 
-                   Example: $$ F = m \\times a $$
+                STRICT FORMATTING RULES (DO NOT IGNORE):
+                1. DO NOT write big paragraphs. 
+                2. USE MARKDOWN LISTS: Start every point with a dash "- " or asterisk "* ".
+                3. NEW LINE FOR EVERY POINT: Put a blank line between every bullet point.
+                4. FORMULAS: Write every formula on its own line using $$ ... $$.
                 
-                OUTPUT STRUCTURE:
-                **Definition:** (1 sentence)
+                REQUIRED OUTPUT STRUCTURE:
                 
-                **Key Points:**
-                * Point 1
-                * Point 2
+                ### Definition
+                (1 Clear Sentence)
                 
-                **Formula/Equation:** (If applicable, else skip)
-                $$ equation $$
+                ### Key Points
+                - Point 1 (Concept)
                 
-                **Real World Example:** (1 sentence)
+                - Point 2 (Mechanism)
                 
-                LANGUAGE: {lang_instruction}
+                - Point 3 (Function)
+                
+                ### Formula
+                (If valid, else write "N/A")
+                $$ Formula $$
+                
+                ### Example
+                (1 Real life example)
+                
+                LANGUAGE RULE: {lang_rule}
                 """
                 
                 completion = client.chat.completions.create(
                     messages=[{"role": "user", "content": prompt}],
                     model="llama-3.3-70b-versatile",
-                    temperature=0.2, # Strict adherence to format
+                    temperature=0.1, 
                 )
                 
                 response = completion.choices[0].message.content
@@ -144,7 +158,7 @@ if user_input:
                 placeholder.markdown(full_response)
                 
             except Exception as e:
-                placeholder.error("Error generating response.")
+                placeholder.error("Error.")
                 full_response = "Error"
 
     st.session_state.messages.append({"role": "assistant", "text": full_response})
