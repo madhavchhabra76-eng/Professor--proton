@@ -3,7 +3,7 @@ from groq import Groq
 import time
 
 # -----------------------------------------------------------
-# PROFESSOR PROTON - ACADEMIC EDITION 📚
+# PROFESSOR PROTON - STRUCTURED LEARNING EDITION 📝
 # -----------------------------------------------------------
 
 st.set_page_config(
@@ -12,61 +12,38 @@ st.set_page_config(
     layout="centered"
 )
 
-# --- 1. PROFESSIONAL CSS (Clean & Serious) ---
+# --- 1. CSS FOR READABILITY ---
 st.markdown("""
 <style>
-    /* Background - Clean Academic White/Grey */
+    /* Clean White Background */
     .stApp {
         background: linear-gradient(180deg, #f8f9fa 0%, #ffffff 100%);
     }
     
-    /* Header/Footer hidden */
-    header {visibility: hidden;}
-    footer {visibility: hidden;}
+    header, footer {visibility: hidden;}
     
-    /* Typography */
-    h1 {
-        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-        color: #1a1a1a;
-        font-weight: 700;
-        text-align: center;
+    /* Typography Fixes */
+    h1 { color: #1a1a1a; font-family: 'Helvetica Neue', sans-serif; }
+    
+    /* FORCE BLACK TEXT & SPACING */
+    p, li, .stMarkdown {
+        color: #2c3e50 !important;
+        font-family: 'Segoe UI', sans-serif;
+        line-height: 1.7; /* More space between lines */
+        font-size: 1.1em;
     }
     
-    /* FORCE BLACK TEXT (Dark Mode Fix) */
-    p, .stMarkdown, h1, h2, h3, li {
-        color: #1a1a1a !important;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        line-height: 1.6;
-    }
+    /* Math Equations Style */
+    .katex { font-size: 1.2em; color: #d63031; }
     
-    /* Settings Box */
-    [data-testid="stExpander"] {
-        background-color: #ffffff;
-        border: 1px solid #e9ecef;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    }
-    
-    /* Chat Bubbles - Academic Style */
+    /* Chat Bubbles */
     .stChatMessage {
         background-color: white;
-        border: 1px solid #e0e0e0;
-        border-radius: 8px;
+        border: 1px solid #e1e4e8;
+        border-radius: 10px;
         padding: 20px;
-        margin-bottom: 15px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
     }
-    
-    /* User Avatar Color */
-    [data-testid="chatAvatarIcon-user"] {
-        background-color: #2c3e50;
-    }
-    
-    /* AI Avatar Color */
-    [data-testid="chatAvatarIcon-assistant"] {
-        background-color: #2980b9;
-    }
-
 </style>
 """, unsafe_allow_html=True)
 
@@ -77,39 +54,34 @@ else:
     st.error("API Key Error. Check Secrets.")
     st.stop()
 
-# --- 3. UI LAYOUT ---
-
+# --- 3. HEADER & SETTINGS ---
 st.title("Professor Proton ⚛️")
-st.markdown("<div style='text-align: center; color: #555; margin-bottom: 20px; font-size: 0.9em;'>Advanced Syllabus Inference Engine</div>", unsafe_allow_html=True)
+st.markdown("<div style='text-align: center; color: #555; margin-bottom: 20px;'>Structured Syllabus Tutor</div>", unsafe_allow_html=True)
 
-with st.expander("⚙️ Configure Session", expanded=True):
+with st.expander("⚙️ Session Settings", expanded=True):
     c1, c2 = st.columns(2)
     with c1:
-        st.caption("Target Class")
-        selected_class = st.selectbox("Class", [6, 7, 8, 9, 10], label_visibility="collapsed")
+        selected_class = st.selectbox("Class Level", [6, 7, 8, 9, 10])
     with c2:
-        st.caption("Output Language")
-        language = st.radio("Lang", ["English", "Punjabi"], label_visibility="collapsed")
+        language = st.radio("Language", ["English", "Punjabi"])
         
-    if st.button("Start New Session", use_container_width=True):
+    if st.button("New Topic ⟳", use_container_width=True):
         st.session_state.messages = []
         st.rerun()
 
 st.markdown("---")
 
-# --- 4. INTELLIGENCE ENGINE ---
-
+# --- 4. CHAT ENGINE ---
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# History
 for msg in st.session_state.messages:
     icon = "🧑‍🎓" if msg["role"] == "user" else "⚛️"
     with st.chat_message(msg["role"], avatar=icon):
         st.write(msg["text"])
 
 # Input
-user_input = st.chat_input("Enter your scientific query...")
+user_input = st.chat_input("Enter a topic (e.g., Force, Photosynthesis)...")
 
 if user_input:
     st.session_state.messages.append({"role": "user", "text": user_input})
@@ -121,44 +93,45 @@ if user_input:
         placeholder = st.empty()
         full_response = ""
         
-        # LOGIC: STRICT vs DETAILED
+        # LOGIC: Force Structure
         if language == "English":
-            lang_instruction = "Answer in formal, academic English."
+            lang_instruction = "Answer in clear English."
         else:
-            lang_instruction = "Answer in Punjabi (Gurmukhi script). Keep technical terms in English brackets."
+            lang_instruction = "Answer in Punjabi (Gurmukhi). Keep terms in English brackets."
 
-        with st.spinner("Retrieving detailed explanation..."):
+        with st.spinner("Structuring answer..."):
             try:
-                # --- THE BRAIN UPGRADE ---
+                # --- THE STRUCTURED PROMPT ---
                 prompt = f"""
-                Act as an expert Science Tutor for Class {selected_class} (NCERT Syllabus India).
+                Act as a Science Teacher for Class {selected_class} (NCERT India).
+                Topic: "{user_input}"
                 
-                User Query: "{user_input}"
+                STRICT FORMATTING RULES:
+                1. CHECK SYLLABUS: If not in Class {selected_class}, refuse politely.
+                2. NO PARAGRAPHS: Do not write big blocks of text.
+                3. USE BULLET POINTS: Break down every explanation into points.
+                4. MATH MODE: Write all formulas/equations on a separate line using LaTeX format. 
+                   Example: $$ F = m \\times a $$
                 
-                INSTRUCTIONS:
-                1. SYLLABUS CHECK: Verify if this topic exists in Class {selected_class} Science. 
-                   - If NO: Refuse politely and suggest the correct class level.
-                   - If YES: Proceed to step 2.
+                OUTPUT STRUCTURE:
+                **Definition:** (1 sentence)
                 
-                2. EXPLANATION QUALITY:
-                   - Provide a detailed, comprehensive answer.
-                   - Start with a clear DEFINITION.
-                   - Explain the MECHANISM (How it works).
-                   - Provide a REAL-WORLD EXAMPLE.
-                   - Use Bullet Points for key features.
+                **Key Points:**
+                * Point 1
+                * Point 2
                 
-                3. TONE:
-                   - Professional, Academic, and Clear.
-                   - NO EMOJIS. Avoid slang.
+                **Formula/Equation:** (If applicable, else skip)
+                $$ equation $$
                 
-                4. LANGUAGE: {lang_instruction}
+                **Real World Example:** (1 sentence)
+                
+                LANGUAGE: {lang_instruction}
                 """
                 
                 completion = client.chat.completions.create(
                     messages=[{"role": "user", "content": prompt}],
                     model="llama-3.3-70b-versatile",
-                    temperature=0.1, # Low temp = More factual, less creative
-                    max_tokens=1024  # Allow longer answers
+                    temperature=0.2, # Strict adherence to format
                 )
                 
                 response = completion.choices[0].message.content
@@ -166,12 +139,12 @@ if user_input:
                 # Streaming
                 for word in response.split():
                     full_response += word + " "
-                    time.sleep(0.01) # Faster typing
+                    time.sleep(0.01)
                     placeholder.markdown(full_response + "▌")
                 placeholder.markdown(full_response)
                 
             except Exception as e:
-                placeholder.error("System Error. Please refresh.")
+                placeholder.error("Error generating response.")
                 full_response = "Error"
 
     st.session_state.messages.append({"role": "assistant", "text": full_response})
