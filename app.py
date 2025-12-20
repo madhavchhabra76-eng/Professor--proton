@@ -5,7 +5,7 @@ import time
 import requests
 
 # -----------------------------------------------------------
-# PROFESSOR PROTON - GOOGLE SEARCH EDITION (Perfect Diagrams) 🔎
+# PROFESSOR PROTON - GALLERY EDITION (3 Images) 🖼️
 # -----------------------------------------------------------
 
 st.set_page_config(page_title="Professor Proton", page_icon="⚛️", layout="centered")
@@ -22,7 +22,7 @@ st.markdown("""
     .example-box { background-color: #e8f5e9; padding: 15px; border-radius: 10px; margin-bottom: 20px; border-left: 5px solid #4caf50; }
     
     .stButton button { border-radius: 20px; width: 100%; font-weight: bold; }
-    button[kind="primary"] { background-color: #4285F4 !important; border: none; color: white !important; } /* Google Blue */
+    button[kind="primary"] { background-color: #4285F4 !important; border: none; color: white !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -33,43 +33,42 @@ if "GOOGLE_CX" not in st.secrets: st.warning("⚠️ missing GOOGLE_CX. Images w
 
 client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
-# --- 3. GOOGLE IMAGE SEARCH FUNCTION ---
-def get_google_image(search_query):
+# --- 3. GOOGLE SEARCH (Fetch 3 Images) ---
+def get_google_images(search_query):
     if "GOOGLE_API_KEY" not in st.secrets or "GOOGLE_CX" not in st.secrets:
-        return None, "Google keys missing in secrets."
+        return [], "Google keys missing."
         
     api_key = st.secrets["GOOGLE_API_KEY"]
     cx = st.secrets["GOOGLE_CX"]
-    
-    # Google Custom Search API URL endpoint
     url = "https://www.googleapis.com/customsearch/v1"
     
+    # Updated Params: Fetch 3 results, Removed 'png' restriction for more results
     params = {
-        'q': search_query,      # The search term
-        'key': api_key,         # Your API key
-        'cx': cx,               # Your Search Engine ID
-        'searchType': 'image',  # We want images
-        'num': 1,               # Just get the top result
-        'safe': 'active',       # Safe search on
-        'imgType': 'clipart',   # Prefer clear diagrams over photos
-        'fileType': 'png'       # Prefer PNG for clarity
+        'q': search_query,
+        'key': api_key,
+        'cx': cx,
+        'searchType': 'image',
+        'num': 3,              # <--- GET 3 IMAGES
+        'safe': 'active',
+        'imgType': 'clipart'   # Prefer illustrations over photos
     }
     
     try:
         response = requests.get(url, params=params)
         results = response.json()
         
-        if 'items' in results and len(results['items']) > 0:
-            # Get the link of the first image result
-            image_url = results['items'][0]['link']
-            return image_url, None
+        image_links = []
+        if 'items' in results:
+            for item in results['items']:
+                image_links.append(item['link'])
+            return image_links, None
         else:
-            return None, "No suitable diagram found on Google."
+            return [], "No images found."
             
     except Exception as e:
-        return None, f"Search Error: {str(e)}"
+        return [], f"Error: {str(e)}"
 
-# --- 4. HELPER FOR STREAMING TEXT ---
+# --- 4. HELPER ---
 def stream_section(placeholder, box_class, title, content):
     current_text = ""
     for word in content.split():
@@ -90,13 +89,16 @@ with st.expander("⚙️ Settings", expanded=False):
         st.session_state.pop("pending_search_query", None)
         st.rerun()
 
-# --- 6. CHAT HISTORY ---
+# --- 6. HISTORY ---
 if "messages" not in st.session_state: st.session_state.messages = []
 
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
-        if msg.get("type") == "image":
-             st.image(msg["content"], caption="Google Search Result", use_column_width=True)
+        if msg.get("type") == "images":
+             # Display saved images in a row
+             cols = st.columns(len(msg["content"]))
+             for i, img_url in enumerate(msg["content"]):
+                 cols[i].image(img_url, use_column_width=True)
         else:
              st.markdown(msg["content"], unsafe_allow_html=True)
 
@@ -117,13 +119,14 @@ if user_input:
 
         with st.spinner("Thinking..."):
             try:
-                # Ask Groq for text content AND the best Google search query
+                # Ask Groq to create a specific search query
                 prompt = f"""
                 Act as a Science Teacher for Class {selected_class}. Topic: "{user_input}"
                 
-                1. Content: Standard JSON (definition, points, formula, example).
-                2. Search Query: Create the perfect short Google Image search query to find a clear, labeled diagram for this topic.
-                   - Example for 'Heart': "human heart diagram labeled clear"
+                1. Content: Standard JSON.
+                2. Search Query: Create a specific Google Images search query for a diagram.
+                   - GOOD: "diagram of photosynthesis process labeled for kids"
+                   - BAD: "photosynthesis"
                    
                 Return JSON:
                 {{
@@ -141,10 +144,8 @@ if user_input:
                 )
                 data = json.loads(completion.choices[0].message.content)
                 
-                # Save the search query for the button click
-                st.session_state["pending_search_query"] = data.get("google_search_query", user_input + " diagram labeled")
+                st.session_state["pending_search_query"] = data.get("google_search_query", user_input + " diagram")
 
-                # Render text boxes
                 full_final_html += stream_section(def_ph, "definition-box", "📖 Definition:", data['definition'])
                 points_html = "<ul>" + "".join([f"<li>{p}</li>" for p in data['points']]) + "</ul>"
                 full_final_html += f"<div class='points-box'><b>⚡ Key Points:</b>{points_html}</div>"
@@ -164,20 +165,22 @@ if user_input:
 # --- 8. BUTTON ---
 if "pending_search_query" in st.session_state:
     st.write("") 
-    # Only show button if Google keys are present
-    if "GOOGLE_API_KEY" in st.secrets and "GOOGLE_CX" in st.secrets:
-        if st.button("🔎 Find Diagram on Google", type="primary"):
-            with st.spinner("Searching Google for the best diagram..."):
-                search_query = st.session_state["pending_search_query"]
-                img_url, error = get_google_image(search_query)
+    if "GOOGLE_API_KEY" in st.secrets:
+        # Show the user what we are searching for (Transparency!)
+        query = st.session_state["pending_search_query"]
+        if st.button(f"🔎 Find Diagrams for: '{query}'", type="primary"):
+            with st.spinner("Searching Google..."):
+                img_links, error = get_google_images(query)
                 
-                if img_url:
-                    st.image(img_url, caption=f"Source: Google Search ('{search_query}')", use_column_width=True)
-                    # Save image to history with type='image'
-                    st.session_state.messages.append({"role": "assistant", "type": "image", "content": img_url})
+                if img_links:
+                    # Display 3 images in a row
+                    cols = st.columns(3)
+                    for i, link in enumerate(img_links):
+                        cols[i].image(link, caption=f"Result {i+1}", use_column_width=True)
+                    
+                    # Save to history
+                    st.session_state.messages.append({"role": "assistant", "type": "images", "content": img_links})
                     del st.session_state["pending_search_query"]
                     st.rerun()
                 else:
                     st.error(error)
-    else:
-        st.warning("Add Google API Keys to secrets to enable image search.")
