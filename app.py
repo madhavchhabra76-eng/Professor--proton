@@ -3,7 +3,7 @@ from groq import Groq
 import time
 
 # -----------------------------------------------------------
-# PROFESSOR PROTON - FORMATTING FIX 🛠️
+# PROFESSOR PROTON - CLEAN TEXT FIX 🧹
 # -----------------------------------------------------------
 
 st.set_page_config(
@@ -12,50 +12,31 @@ st.set_page_config(
     layout="centered"
 )
 
-# --- 1. CSS (Force Line Breaks) ---
+# --- 1. CSS (Standard Size, No Giant Text) ---
 st.markdown("""
 <style>
-    /* Main Background */
     .stApp {
-        background: linear-gradient(180deg, #f8f9fa 0%, #ffffff 100%);
+        background: linear-gradient(180deg, #ffffff 0%, #f0f2f6 100%);
     }
     
-    /* Force readable spacing */
-    p, li {
-        color: #1a1a1a !important;
-        font-family: 'Segoe UI', sans-serif;
-        line-height: 1.8 !important; /* Extra space between lines */
-        margin-bottom: 12px !important; /* Space between paragraphs */
-        font-size: 1.1em;
-    }
-    
-    /* Bullet Points Spacing */
-    ul {
-        margin-top: 10px !important;
-        margin-bottom: 10px !important;
-    }
-    
-    /* Math Equations - Make them pop */
-    .katex-display {
-        margin: 20px 0 !important;
-        padding: 10px;
-        background-color: #f8f9fa;
-        border-radius: 5px;
-        border-left: 3px solid #d63031;
+    /* Reset text size to normal */
+    p, li, div {
+        color: #1f2937 !important;
+        font-family: 'Helvetica Neue', sans-serif;
+        font-size: 16px !important; /* Normal reading size */
+        line-height: 1.6 !important;
     }
     
     /* Chat Bubbles */
     .stChatMessage {
         background-color: white;
-        border: 1px solid #e1e4e8;
+        border: 1px solid #e5e7eb;
         border-radius: 12px;
-        padding: 20px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        padding: 15px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
     
-    /* Header/Footer hidden */
     header, footer {visibility: hidden;}
-    
 </style>
 """, unsafe_allow_html=True)
 
@@ -66,9 +47,8 @@ else:
     st.error("API Key Error.")
     st.stop()
 
-# --- 3. UI LAYOUT ---
+# --- 3. UI HEADER ---
 st.title("Professor Proton ⚛️")
-st.markdown("<div style='text-align: center; color: #555; margin-bottom: 20px;'>Structured Syllabus Tutor</div>", unsafe_allow_html=True)
 
 with st.expander("⚙️ Settings", expanded=True):
     c1, c2 = st.columns(2)
@@ -76,14 +56,14 @@ with st.expander("⚙️ Settings", expanded=True):
         selected_class = st.selectbox("Class Level", [6, 7, 8, 9, 10])
     with c2:
         language = st.radio("Language", ["English", "Punjabi"])
-    
+        
     if st.button("Clear Chat", use_container_width=True):
         st.session_state.messages = []
         st.rerun()
 
 st.markdown("---")
 
-# --- 4. CHAT ENGINE ---
+# --- 4. CHAT LOGIC ---
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
@@ -93,7 +73,7 @@ for msg in st.session_state.messages:
         st.write(msg["text"])
 
 # Input
-user_input = st.chat_input("Enter topic (e.g., Photosynthesis)...")
+user_input = st.chat_input("Enter topic...")
 
 if user_input:
     st.session_state.messages.append({"role": "user", "text": user_input})
@@ -107,39 +87,34 @@ if user_input:
         # LOGIC
         lang_rule = "Answer in English." if language == "English" else "Answer in Punjabi (Gurmukhi)."
 
-        with st.spinner("Structuring..."):
+        with st.spinner("Thinking..."):
             try:
-                # --- THE "ANTI-PARAGRAPH" PROMPT ---
+                # --- PROMPT: NO HEADERS, JUST LABELS ---
                 prompt = f"""
                 Act as a Science Teacher for Class {selected_class} (NCERT India).
                 Topic: "{user_input}"
                 
-                STRICT FORMATTING RULES (DO NOT IGNORE):
-                1. DO NOT write big paragraphs. 
-                2. USE MARKDOWN LISTS: Start every point with a dash "- " or asterisk "* ".
-                3. NEW LINE FOR EVERY POINT: Put a blank line between every bullet point.
-                4. FORMULAS: Write every formula on its own line using $$ ... $$.
+                STRICT RULES:
+                1. DO NOT use Markdown Headers (like ### or ##).
+                2. ONLY use Bold Labels (like **Label:**).
+                3. Keep it brief.
                 
-                REQUIRED OUTPUT STRUCTURE:
+                OUTPUT FORMAT:
                 
-                ### Definition
-                (1 Clear Sentence)
+                **Definition:**
+                (Write definition here)
                 
-                ### Key Points
-                - Point 1 (Concept)
+                **Key Points:**
+                - (Point 1)
+                - (Point 2)
                 
-                - Point 2 (Mechanism)
+                **Formula:**
+                $$ Formula $$ (or write None)
                 
-                - Point 3 (Function)
+                **Example:**
+                (Real life example)
                 
-                ### Formula
-                (If valid, else write "N/A")
-                $$ Formula $$
-                
-                ### Example
-                (1 Real life example)
-                
-                LANGUAGE RULE: {lang_rule}
+                LANGUAGE: {lang_rule}
                 """
                 
                 completion = client.chat.completions.create(
@@ -148,10 +123,17 @@ if user_input:
                     temperature=0.1, 
                 )
                 
-                response = completion.choices[0].message.content
+                raw_text = completion.choices[0].message.content
                 
-                # Streaming
-                for word in response.split():
+                # --- PYTHON CLEANER (The Fix) ---
+                # This forces a double-enter before every bold label so they never stick together.
+                clean_text = raw_text.replace("**Definition:**", "\n\n**Definition:**")
+                clean_text = clean_text.replace("**Key Points:**", "\n\n**Key Points:**")
+                clean_text = clean_text.replace("**Formula:**", "\n\n**Formula:**")
+                clean_text = clean_text.replace("**Example:**", "\n\n**Example:**")
+                
+                # Streaming the CLEAN text
+                for word in clean_text.split():
                     full_response += word + " "
                     time.sleep(0.01)
                     placeholder.markdown(full_response + "▌")
