@@ -1,38 +1,38 @@
 import streamlit as st
 from groq import Groq
 import json
+import time
 
 # -----------------------------------------------------------
-# PROFESSOR PROTON - TEXT LAYOUT FIX (JSON) 📝
+# PROFESSOR PROTON - ANIMATED LAYOUT FIX 🎬
 # -----------------------------------------------------------
 
 st.set_page_config(page_title="Professor Proton", page_icon="⚛️", layout="centered")
 
-# --- 1. CSS (The Separation Logic) ---
+# --- 1. CSS (Layout Separation) ---
 st.markdown("""
 <style>
     /* Background */
     .stApp { background-color: #ffffff; }
     
-    /* Force Black Text everywhere */
+    /* Force Black Text */
     p, h1, h2, h3, li, div, span {
         color: #000000 !important;
         font-family: 'Helvetica Neue', sans-serif;
     }
     
-    /* BOX STYLES - This physically forces separation */
-    
+    /* SEPARATE BOXES */
     .definition-box {
-        background-color: #e3f2fd; /* Soft Blue */
+        background-color: #e3f2fd;
         padding: 15px;
         border-radius: 10px;
-        margin-bottom: 20px; /* Big gap below */
+        margin-bottom: 20px;
         border-left: 5px solid #2196f3;
         box-shadow: 0 2px 5px rgba(0,0,0,0.05);
     }
     
     .points-box {
-        background-color: #f5f5f5; /* Light Grey */
+        background-color: #f5f5f5;
         padding: 15px;
         border-radius: 10px;
         margin-bottom: 20px;
@@ -41,7 +41,7 @@ st.markdown("""
     }
     
     .formula-box {
-        background-color: #fff3e0; /* Soft Orange */
+        background-color: #fff3e0;
         padding: 15px;
         border-radius: 10px;
         margin-bottom: 20px;
@@ -51,21 +51,17 @@ st.markdown("""
     }
     
     .example-box {
-        background-color: #e8f5e9; /* Soft Green */
+        background-color: #e8f5e9;
         padding: 15px;
         border-radius: 10px;
         margin-bottom: 20px;
         border-left: 5px solid #4caf50;
     }
-
-    /* List styling inside boxes */
-    li {
-        margin-bottom: 10px; /* Space between bullet points */
-    }
     
-    /* Input field styling */
-    .stTextInput input {
+    /* Button */
+    .stButton button {
         border-radius: 20px;
+        width: 100%;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -77,7 +73,40 @@ if "GROQ_API_KEY" not in st.secrets:
     
 client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
-# --- 3. UI HEADER ---
+# --- 3. HELPER FUNCTION: ANIMATE TEXT INSIDE HTML BOX ---
+def stream_section(placeholder, box_class, title, content):
+    """
+    Animates text appearing inside a specific colored box.
+    """
+    full_html = ""
+    # We animate the content word by word
+    words = content.split()
+    current_text = ""
+    
+    for word in words:
+        current_text += word + " "
+        # Update the placeholder with the current text inside the box
+        # We add the ▌ cursor to make it look like typing
+        html = f"""
+        <div class='{box_class}'>
+            <b>{title}</b><br>
+            {current_text} ▌
+        </div>
+        """
+        placeholder.markdown(html, unsafe_allow_html=True)
+        time.sleep(0.02) # Typing Speed
+        
+    # Final render without cursor
+    final_html = f"""
+    <div class='{box_class}'>
+        <b>{title}</b><br>
+        {current_text}
+    </div>
+    """
+    placeholder.markdown(final_html, unsafe_allow_html=True)
+    return final_html
+
+# --- 4. UI HEADER ---
 st.title("Professor Proton ⚛️")
 
 with st.expander("⚙️ Settings", expanded=False):
@@ -87,14 +116,13 @@ with st.expander("⚙️ Settings", expanded=False):
         st.session_state.messages = []
         st.rerun()
 
-# --- 4. CHAT ENGINE ---
+# --- 5. CHAT ENGINE ---
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
 # Display History
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
-        # Render HTML content safely
         st.markdown(msg["content"], unsafe_allow_html=True)
 
 # User Input
@@ -108,25 +136,28 @@ if user_input:
 
     # 2. Generate Structured Answer
     with st.chat_message("assistant"):
-        placeholder = st.empty()
+        # We create empty placeholders for each section so they appear in order
+        def_placeholder = st.empty()
+        points_placeholder = st.empty()
+        formula_placeholder = st.empty()
+        ex_placeholder = st.empty()
+        
+        full_final_html = ""
         
         with st.spinner("Thinking..."):
             try:
-                # --- THE BRAIN: Forces JSON Output ---
-                # This guarantees the AI cannot write a paragraph.
-                # It MUST give us separate strings.
-                
+                # --- BRAIN ---
                 prompt = f"""
                 Act as a Science Teacher for Class {selected_class}.
                 Topic: "{user_input}"
                 
-                You must return valid JSON strictly. 
+                Return JSON.
                 Structure:
                 {{
-                    "definition": "A clear, simple definition.",
+                    "definition": "Definition text.",
                     "points": ["Point 1", "Point 2", "Point 3"],
-                    "formula": "The formula or equation (or 'None')",
-                    "example": "A real world example."
+                    "formula": "Formula or None",
+                    "example": "Real world example."
                 }}
                 
                 Language Rule: {"English" if language == "English" else "Punjabi (Gurmukhi)"}
@@ -135,40 +166,37 @@ if user_input:
                 completion = client.chat.completions.create(
                     messages=[{"role": "user", "content": prompt}],
                     model="llama-3.3-70b-versatile",
-                    response_format={"type": "json_object"} # FORCE JSON MODE
+                    response_format={"type": "json_object"}
                 )
                 
-                # Parse the JSON
                 data = json.loads(completion.choices[0].message.content)
                 
-                # --- BUILD THE UI MANUALLY ---
-                # We build HTML strings. This ensures exact layout control.
+                # --- ANIMATION PHASE ---
                 
-                # 1. Definition (Blue)
-                html_output = f"""
-                <div class='definition-box'>
-                    <b>📖 Definition:</b><br>{data['definition']}
-                </div>
-                """
+                # 1. Animate Definition
+                html_1 = stream_section(def_placeholder, "definition-box", "📖 Definition:", data['definition'])
+                full_final_html += html_1
                 
-                # 2. Key Points (Grey) - We loop through the list to make bullets
-                html_output += "<div class='points-box'><b>⚡ Key Points:</b><ul>"
-                for p in data['points']:
-                    html_output += f"<li>{p}</li>"
-                html_output += "</ul></div>"
+                # 2. Animate Points (Convert list to string for animation)
+                points_html_list = "<ul>" + "".join([f"<li>{p}</li>" for p in data['points']]) + "</ul>"
+                # For points, we just fade them in or type them quickly. 
+                # Typing HTML lists word-by-word is buggy, so we show the points box with a slight delay.
+                final_points_html = f"<div class='points-box'><b>⚡ Key Points:</b>{points_html_list}</div>"
+                points_placeholder.markdown(final_points_html, unsafe_allow_html=True)
+                full_final_html += final_points_html
+                time.sleep(0.5) # Pause for effect
                 
-                # 3. Formula (Orange) - Only show if it exists
+                # 3. Animate Formula
                 if data['formula'] and data['formula'] != "None":
-                    html_output += f"<div class='formula-box'><b>🧮 Formula:</b><br>{data['formula']}</div>"
+                    html_3 = stream_section(formula_placeholder, "formula-box", "🧮 Formula:", data['formula'])
+                    full_final_html += html_3
                 
-                # 4. Example (Green)
-                html_output += f"<div class='example-box'><b>🌍 Real World Example:</b><br>{data['example']}</div>"
+                # 4. Animate Example
+                html_4 = stream_section(ex_placeholder, "example-box", "🌍 Real World Example:", data['example'])
+                full_final_html += html_4
                 
-                # Render the final HTML
-                st.markdown(html_output, unsafe_allow_html=True)
-                
-                # Save to memory
-                st.session_state.messages.append({"role": "assistant", "content": html_output})
+                # Save complete HTML to history
+                st.session_state.messages.append({"role": "assistant", "content": full_final_html})
                             
             except Exception as e:
                 st.error("I couldn't process that. Please try again.")
