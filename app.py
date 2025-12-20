@@ -8,7 +8,7 @@ import urllib.parse
 from PIL import Image
 
 # -----------------------------------------------------------
-# PROFESSOR PROTON - HIGH-QUALITY IMAGE EDITION ✨
+# PROFESSOR PROTON - FLUX EDITION (Best Quality) 💎
 # -----------------------------------------------------------
 
 st.set_page_config(page_title="Professor Proton", page_icon="⚛️", layout="centered")
@@ -36,33 +36,24 @@ if "GROQ_API_KEY" not in st.secrets:
 
 client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
-# --- 3. IMAGE GENERATOR (With Detailed Prompts) ---
+# --- 3. IMAGE GENERATOR (Using FLUX Model) ---
 
 def generate_image(detailed_description):
-    """
-    Generates an image using a detailed description from the AI teacher.
-    """
-    # We create a very specific prompt for a clear, educational diagram.
-    final_prompt = f"A clean, accurate educational diagram for a science textbook showing: {detailed_description}. The background is pure white. All labels and text must be perfectly clear, legible, and in English. No blurry or garbled text."
+    # We use a trick: We ask for "Infographic style" which usually cleans up the look.
+    final_prompt = f"Educational infographic of {detailed_description}. Clean vector art style, white background, high definition, minimalistic, scientific accuracy. No garbled text."
     
-    # URL Encode the prompt
     encoded_prompt = urllib.parse.quote(final_prompt)
     
-    # Pollinations URL with high resolution
-    url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?nologo=true&width=1024&height=768&model=flux"
+    # WE USE 'model=flux' -> This is the smartest free model available right now.
+    url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?width=1024&height=768&model=flux&nologo=true"
     
     try:
-        # Increase timeout for higher quality generation
-        response = requests.get(url, timeout=25)
-        
+        response = requests.get(url, timeout=25) # Give it time to think
         if response.status_code == 200:
-            image = Image.open(io.BytesIO(response.content))
-            return image
+            return Image.open(io.BytesIO(response.content))
         else:
             return None
-            
-    except Exception as e:
-        print(f"Image generation error: {e}")
+    except:
         return None
 
 def stream_section(placeholder, box_class, title, content):
@@ -112,14 +103,14 @@ if user_input:
 
         with st.spinner("Thinking..."):
             try:
-                # We now ask the AI for a detailed "image_description" as well
+                # We ask Groq to describe the VISUALS, not the text labels.
                 prompt = f"""
                 Act as a Science Teacher for Class {selected_class}. Topic: "{user_input}"
                 Return strict JSON.
                 Structure: {{
                     "definition": "Text", "points": ["p1", "p2"], "formula": "Text or None", 
                     "example": "Text", 
-                    "image_description": "A detailed visual description for a clear, accurate scientific diagram of {user_input}. Describe the key elements, arrows, and labels that should be present."
+                    "image_description": "A visual description of {user_input} focusing on shapes, objects, and actions. Do NOT ask for text labels."
                 }}
                 Language: {"English" if language == "English" else "Punjabi (Gurmukhi)"}
                 """
@@ -130,8 +121,7 @@ if user_input:
                 )
                 data = json.loads(completion.choices[0].message.content)
                 
-                # Save the detailed description for the button click
-                st.session_state["pending_image_prompt"] = data.get("image_description", f"A diagram explaining {user_input}")
+                st.session_state["pending_image_prompt"] = data.get("image_description", user_input)
 
                 full_final_html += stream_section(def_ph, "definition-box", "📖 Definition:", data['definition'])
                 points_html = "<ul>" + "".join([f"<li>{p}</li>" for p in data['points']]) + "</ul>"
@@ -153,9 +143,8 @@ if user_input:
 # --- 7. BUTTON OUTSIDE LOOP ---
 if "pending_image_prompt" in st.session_state:
     st.write("") 
-    if st.button("🎨 Generate Diagram for this Topic", type="primary"):
-        with st.spinner("Creating a detailed diagram (this may take ~20s)..."):
-            # Get the detailed prompt from memory
+    if st.button("🎨 Generate Diagram (Flux Model)", type="primary"):
+        with st.spinner("Drawing high-quality diagram (~15s)..."):
             detailed_prompt = st.session_state["pending_image_prompt"]
             img = generate_image(detailed_prompt)
             if img:
@@ -163,4 +152,4 @@ if "pending_image_prompt" in st.session_state:
                 del st.session_state["pending_image_prompt"]
                 st.rerun()
             else:
-                st.error("Error generating image. Please try again.")
+                st.error("Error generating image.")
