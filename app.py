@@ -1,10 +1,14 @@
 import streamlit as st
 from groq import Groq
 import json
+import time
+import requests
+import io
 import urllib.parse
+from PIL import Image
 
 # -----------------------------------------------------------
-# PROFESSOR PROTON - CLEAN SCHEMATIC EDITION 🧹
+# PROFESSOR PROTON - AI ARTIST EDITION (Flux) 🎨
 # -----------------------------------------------------------
 
 st.set_page_config(page_title="Professor Proton", page_icon="⚛️", layout="centered")
@@ -21,7 +25,7 @@ st.markdown("""
     .example-box { background-color: #e8f5e9; padding: 15px; border-radius: 10px; margin-bottom: 20px; border-left: 5px solid #4caf50; }
     
     .stButton button { border-radius: 20px; width: 100%; font-weight: bold; }
-    button[kind="primary"] { background-color: #2e86de !important; border: none; color: white !important; }
+    button[kind="primary"] { background-color: #6c5ce7 !important; border: none; color: white !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -32,24 +36,33 @@ if "GROQ_API_KEY" not in st.secrets:
 
 client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
-# --- 3. DIAGRAM GENERATOR (With Cleaning Logic) ---
-def get_diagram_url(dot_code):
-    base_url = "https://quickchart.io/graphviz"
+# --- 3. POLLINATIONS AI (FLUX MODEL) ---
+def generate_image(visual_description):
+    # We explicitly tell the AI to focus on VISUALS, not TEXT.
+    # 'nologo=true' removes watermarks.
+    # 'model=flux' is the high-quality mode.
     
-    # 🧹 CLEANER FUNCTION: Removes Markdown backticks if the AI adds them
-    clean_dot = dot_code.replace("```dot", "").replace("```", "").strip()
+    prompt = f"A high-quality, 4k, cinematic educational illustration of {visual_description}. Scientific accuracy, detailed textures, dramatic lighting, photorealistic or 3D render style. No text labels."
     
-    encoded_dot = urllib.parse.quote(clean_dot)
-    return f"{base_url}?graph={encoded_dot}&width=500&height=300&format=png"
+    encoded_prompt = urllib.parse.quote(prompt)
+    url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?width=1024&height=768&model=flux&nologo=true&enhance=true"
+    
+    try:
+        response = requests.get(url, timeout=20)
+        if response.status_code == 200:
+            return Image.open(io.BytesIO(response.content))
+        return None
+    except:
+        return None
 
-# --- 4. UI HEADER ---
+# --- 4. UI ---
 st.title("Professor Proton ⚛️")
 with st.expander("⚙️ Settings", expanded=False):
     selected_class = st.selectbox("Class", [6, 7, 8, 9, 10])
     language = st.radio("Language", ["English", "Punjabi"])
     if st.button("🧹 Clear Chat"):
         st.session_state.messages = []
-        st.session_state.pop("pending_diagram_code", None)
+        st.session_state.pop("pending_image_prompt", None)
         st.rerun()
 
 # --- 5. HISTORY ---
@@ -57,17 +70,17 @@ if "messages" not in st.session_state: st.session_state.messages = []
 
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
-        if msg["type"] == "text":
+        if isinstance(msg["content"], str):
             st.markdown(msg["content"], unsafe_allow_html=True)
-        elif msg["type"] == "image":
-            st.image(msg["content"], caption="Process Diagram")
+        elif isinstance(msg["content"], Image.Image):
+            st.image(msg["content"], caption="AI Generated Image", use_column_width=True)
 
-# --- 6. MAIN LOGIC ---
+# --- 6. LOGIC ---
 user_input = st.chat_input("Ask a question (e.g. Photosynthesis)...")
 
 if user_input:
-    st.session_state.pop("pending_diagram_code", None)
-    st.session_state.messages.append({"role": "user", "type": "text", "content": user_input})
+    st.session_state.pop("pending_image_prompt", None)
+    st.session_state.messages.append({"role": "user", "content": user_input})
     with st.chat_message("user"): st.write(user_input)
 
     with st.chat_message("assistant"):
@@ -79,15 +92,14 @@ if user_input:
 
         with st.spinner("Thinking..."):
             try:
+                # Ask Groq for the text content AND a visual description
                 prompt = f"""
                 Act as a Science Teacher for Class {selected_class}. Topic: "{user_input}"
                 
-                1. Content: Standard JSON structure.
-                2. Diagram: Write RAW 'graphviz_dot' code for a FLOWCHART.
-                   - START with 'digraph G {{'
-                   - DO NOT use markdown backticks.
-                   - Use rankdir=LR;
-                   - Use rectangular nodes: node [shape=box, style=filled, fillcolor="#E3F2FD"];
+                1. Content: Standard JSON (definition, points, formula, example).
+                2. Visual: Create a 'image_prompt' that describes the OBJECTS only. 
+                   - Example: "A close up of a green leaf with sun rays hitting it."
+                   - DO NOT ask for text labels or arrows.
                    
                 Return JSON:
                 {{
@@ -95,7 +107,7 @@ if user_input:
                     "points": ["..."],
                     "formula": "...",
                     "example": "...",
-                    "graphviz_dot": "digraph G {{ ... }}"
+                    "image_prompt": "..."
                 }}
                 
                 Language: {"English" if language == "English" else "Punjabi (Gurmukhi)"}
@@ -108,8 +120,9 @@ if user_input:
                 )
                 data = json.loads(completion.choices[0].message.content)
                 
-                st.session_state["pending_diagram_code"] = data.get("graphviz_dot", None)
+                st.session_state["pending_image_prompt"] = data.get("image_prompt", user_input)
 
+                # Render text boxes
                 full_final_html += f"<div class='definition-box'><b>📖 Definition:</b><br>{data['definition']}</div>"
                 def_ph.markdown(full_final_html, unsafe_allow_html=True)
                 
@@ -124,21 +137,22 @@ if user_input:
                 full_final_html += f"<div class='example-box'><b>🌍 Example:</b><br>{data['example']}</div>"
                 ex_ph.markdown(full_final_html, unsafe_allow_html=True)
                 
-                st.session_state.messages.append({"role": "assistant", "type": "text", "content": full_final_html})
+                st.session_state.messages.append({"role": "assistant", "content": full_final_html})
                 st.rerun()
 
             except Exception as e:
                 st.error(f"Error: {str(e)}")
 
 # --- 7. BUTTON ---
-if "pending_diagram_code" in st.session_state:
+if "pending_image_prompt" in st.session_state:
     st.write("") 
-    if st.button("📊 Show Process Diagram (Perfect Text)", type="primary"):
-        with st.spinner("Generating schematic..."):
-            dot_code = st.session_state["pending_diagram_code"]
-            if dot_code:
-                img_url = get_diagram_url(dot_code)
-                st.image(img_url, caption="Flowchart Schematic")
-                st.session_state.messages.append({"role": "assistant", "type": "image", "content": img_url})
-                del st.session_state["pending_diagram_code"]
+    if st.button("🎨 Generate AI Image (Flux)", type="primary"):
+        with st.spinner("Painting image (Wait ~15s)..."):
+            visual_prompt = st.session_state["pending_image_prompt"]
+            img = generate_image(visual_prompt)
+            if img:
+                st.session_state.messages.append({"role": "assistant", "content": img})
+                del st.session_state["pending_image_prompt"]
                 st.rerun()
+            else:
+                st.error("Server busy. Click again.")
