@@ -7,7 +7,7 @@ import io
 from PIL import Image
 
 # -----------------------------------------------------------
-# PROFESSOR PROTON - FINAL FIX (UPDATED URL) 🚀
+# PROFESSOR PROTON - STABLE DIFFUSION 1.5 EDITION 🛡️
 # -----------------------------------------------------------
 
 st.set_page_config(page_title="Professor Proton", page_icon="⚛️", layout="centered")
@@ -37,35 +37,29 @@ if "HF_API_KEY" not in st.secrets:
 
 client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
-# --- 3. SMART IMAGE GENERATOR (New Router URL) ---
+# --- 3. IMAGE GENERATOR (Using Reliable v1.5 Model) ---
 
 def generate_image(prompt_text):
     if "HF_API_KEY" not in st.secrets: return None
     
-    # 🚨 UPDATED URL HERE: Changed 'api-inference' to 'router'
-    API_URL = "https://router.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0"
+    # 🚨 CHANGED MODEL: Using 'runwayml/stable-diffusion-v1-5' (Very Reliable)
+    # We also keep the 'router' URL which is the new standard.
+    API_URL = "https://router.huggingface.co/models/runwayml/stable-diffusion-v1-5"
     headers = {"Authorization": f"Bearer {st.secrets['HF_API_KEY']}"}
     payload = {"inputs": f"educational science textbook diagram, clear labels, white background, high quality, accurate: {prompt_text}"}
     
-    # RETRY LOOP: Tries 5 times if the model is "sleeping"
     for i in range(5): 
         try:
             response = requests.post(API_URL, headers=headers, json=payload)
             
-            # If successful (200 OK)
             if response.status_code == 200:
                 image = Image.open(io.BytesIO(response.content))
                 return image
-                
-            # If Model is Sleeping (503 Service Unavailable)
             elif response.status_code == 503:
-                data = response.json()
-                estimated_time = data.get('estimated_time', 10)
-                st.toast(f"💤 Model is waking up... waiting {estimated_time:.1f}s")
-                time.sleep(estimated_time) # Wait for it to wake up
-                continue # Try again!
-                
-            # If any other error
+                # If model is sleeping, wait 10s
+                st.toast("💤 Waking up the AI Artist... (10s)")
+                time.sleep(10) 
+                continue 
             else:
                 st.error(f"HF Error: {response.status_code} - {response.text}")
                 return None
@@ -73,7 +67,6 @@ def generate_image(prompt_text):
         except Exception as e:
             st.error(f"Connection Error: {e}")
             return None
-            
     return None
 
 def stream_section(placeholder, box_class, title, content):
@@ -162,7 +155,7 @@ if user_input:
 if "pending_image_prompt" in st.session_state:
     st.write("") 
     if st.button("🎨 Generate Diagram for this Topic", type="primary"):
-        with st.spinner("Drawing diagram (Wait ~20s)..."):
+        with st.spinner("Drawing diagram (Wait ~15s)..."):
             prompt = st.session_state["pending_image_prompt"]
             img = generate_image(prompt)
             if img:
