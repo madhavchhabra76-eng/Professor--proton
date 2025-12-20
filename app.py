@@ -8,7 +8,7 @@ import urllib.parse
 from PIL import Image
 
 # -----------------------------------------------------------
-# PROFESSOR PROTON - POLLINATIONS EDITION (Reliable) 🌸
+# PROFESSOR PROTON - HIGH-QUALITY IMAGE EDITION ✨
 # -----------------------------------------------------------
 
 st.set_page_config(page_title="Professor Proton", page_icon="⚛️", layout="centered")
@@ -17,7 +17,7 @@ st.set_page_config(page_title="Professor Proton", page_icon="⚛️", layout="ce
 st.markdown("""
 <style>
     .stApp { background-color: #ffffff; }
-    p, h1, h2, h3, li, div, span { color: #000000 !important; font-family: 'Helvetica Neue', sans-serif; }
+    p, h1, h2, h3, li, div, span, b { color: #000000 !important; font-family: 'Helvetica Neue', sans-serif; }
     
     .definition-box { background-color: #e3f2fd; padding: 15px; border-radius: 10px; margin-bottom: 20px; border-left: 5px solid #2196f3; }
     .points-box { background-color: #f5f5f5; padding: 15px; border-radius: 10px; margin-bottom: 20px; border-left: 5px solid #9e9e9e; }
@@ -25,33 +25,35 @@ st.markdown("""
     .example-box { background-color: #e8f5e9; padding: 15px; border-radius: 10px; margin-bottom: 20px; border-left: 5px solid #4caf50; }
     
     .stButton button { border-radius: 20px; width: 100%; font-weight: bold; }
-    button[kind="primary"] { background-color: #6c5ce7 !important; border: none; }
+    button[kind="primary"] { background-color: #6c5ce7 !important; border: none; color: white !important; }
 </style>
 """, unsafe_allow_html=True)
 
 # --- 2. SETUP API KEYS ---
-# We ONLY need Groq now. Pollinations is free and keyless!
 if "GROQ_API_KEY" not in st.secrets:
     st.error("⚠️ Groq API Key missing.")
     st.stop()
 
 client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
-# --- 3. POLLINATIONS IMAGE GENERATOR (No Key Required) ---
+# --- 3. IMAGE GENERATOR (With Detailed Prompts) ---
 
-def generate_image(prompt_text):
-    # We explicitly ask for a scientific style
-    final_prompt = f"educational science textbook diagram, white background, clear, high quality, 4k: {prompt_text}"
+def generate_image(detailed_description):
+    """
+    Generates an image using a detailed description from the AI teacher.
+    """
+    # We create a very specific prompt for a clear, educational diagram.
+    final_prompt = f"A clean, accurate educational diagram for a science textbook showing: {detailed_description}. The background is pure white. All labels and text must be perfectly clear, legible, and in English. No blurry or garbled text."
     
-    # URL Encode the prompt so it works in a web link
+    # URL Encode the prompt
     encoded_prompt = urllib.parse.quote(final_prompt)
     
-    # Pollinations Magic URL
-    url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?nologo=true&width=1024&height=1024"
+    # Pollinations URL with high resolution
+    url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?nologo=true&width=1024&height=768&model=flux"
     
     try:
-        # We fetch the image from the internet
-        response = requests.get(url, timeout=15)
+        # Increase timeout for higher quality generation
+        response = requests.get(url, timeout=25)
         
         if response.status_code == 200:
             image = Image.open(io.BytesIO(response.content))
@@ -60,6 +62,7 @@ def generate_image(prompt_text):
             return None
             
     except Exception as e:
+        print(f"Image generation error: {e}")
         return None
 
 def stream_section(placeholder, box_class, title, content):
@@ -90,7 +93,7 @@ for msg in st.session_state.messages:
         if isinstance(msg["content"], str):
             st.markdown(msg["content"], unsafe_allow_html=True)
         elif isinstance(msg["content"], Image.Image):
-            st.image(msg["content"], caption="Generated Diagram", use_column_width=True)
+            st.image(msg["content"], caption="AI Generated Diagram", use_column_width=True)
 
 # --- 6. MAIN LOGIC ---
 user_input = st.chat_input("Ask a question (e.g. Photosynthesis)...")
@@ -109,13 +112,14 @@ if user_input:
 
         with st.spinner("Thinking..."):
             try:
+                # We now ask the AI for a detailed "image_description" as well
                 prompt = f"""
                 Act as a Science Teacher for Class {selected_class}. Topic: "{user_input}"
                 Return strict JSON.
                 Structure: {{
                     "definition": "Text", "points": ["p1", "p2"], "formula": "Text or None", 
                     "example": "Text", 
-                    "image_description": "A detailed physical description for a scientific diagram of this topic for an artist."
+                    "image_description": "A detailed visual description for a clear, accurate scientific diagram of {user_input}. Describe the key elements, arrows, and labels that should be present."
                 }}
                 Language: {"English" if language == "English" else "Punjabi (Gurmukhi)"}
                 """
@@ -125,7 +129,9 @@ if user_input:
                     response_format={"type": "json_object"}
                 )
                 data = json.loads(completion.choices[0].message.content)
-                st.session_state["pending_image_prompt"] = data.get("image_description", user_input + " diagram")
+                
+                # Save the detailed description for the button click
+                st.session_state["pending_image_prompt"] = data.get("image_description", f"A diagram explaining {user_input}")
 
                 full_final_html += stream_section(def_ph, "definition-box", "📖 Definition:", data['definition'])
                 points_html = "<ul>" + "".join([f"<li>{p}</li>" for p in data['points']]) + "</ul>"
@@ -148,9 +154,10 @@ if user_input:
 if "pending_image_prompt" in st.session_state:
     st.write("") 
     if st.button("🎨 Generate Diagram for this Topic", type="primary"):
-        with st.spinner("Drawing diagram (Wait ~5s)..."):
-            prompt = st.session_state["pending_image_prompt"]
-            img = generate_image(prompt)
+        with st.spinner("Creating a detailed diagram (this may take ~20s)..."):
+            # Get the detailed prompt from memory
+            detailed_prompt = st.session_state["pending_image_prompt"]
+            img = generate_image(detailed_prompt)
             if img:
                 st.session_state.messages.append({"role": "assistant", "content": img})
                 del st.session_state["pending_image_prompt"]
