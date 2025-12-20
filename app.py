@@ -1,146 +1,174 @@
 import streamlit as st
 from groq import Groq
-import time
+import json
 
 # -----------------------------------------------------------
-# PROFESSOR PROTON - CLEAN TEXT FIX 🧹
+# PROFESSOR PROTON - TEXT LAYOUT FIX (JSON) 📝
 # -----------------------------------------------------------
 
-st.set_page_config(
-    page_title="Professor Proton", 
-    page_icon="⚛️", 
-    layout="centered"
-)
+st.set_page_config(page_title="Professor Proton", page_icon="⚛️", layout="centered")
 
-# --- 1. CSS (Standard Size, No Giant Text) ---
+# --- 1. CSS (The Separation Logic) ---
 st.markdown("""
 <style>
-    .stApp {
-        background: linear-gradient(180deg, #ffffff 0%, #f0f2f6 100%);
-    }
+    /* Background */
+    .stApp { background-color: #ffffff; }
     
-    /* Reset text size to normal */
-    p, li, div {
-        color: #1f2937 !important;
+    /* Force Black Text everywhere */
+    p, h1, h2, h3, li, div, span {
+        color: #000000 !important;
         font-family: 'Helvetica Neue', sans-serif;
-        font-size: 16px !important; /* Normal reading size */
-        line-height: 1.6 !important;
     }
     
-    /* Chat Bubbles */
-    .stChatMessage {
-        background-color: white;
-        border: 1px solid #e5e7eb;
-        border-radius: 12px;
+    /* BOX STYLES - This physically forces separation */
+    
+    .definition-box {
+        background-color: #e3f2fd; /* Soft Blue */
         padding: 15px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        border-radius: 10px;
+        margin-bottom: 20px; /* Big gap below */
+        border-left: 5px solid #2196f3;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
     }
     
-    header, footer {visibility: hidden;}
+    .points-box {
+        background-color: #f5f5f5; /* Light Grey */
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        border-left: 5px solid #9e9e9e;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+    
+    .formula-box {
+        background-color: #fff3e0; /* Soft Orange */
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        border-left: 5px solid #ff9800;
+        font-family: 'Courier New', monospace;
+        font-weight: bold;
+    }
+    
+    .example-box {
+        background-color: #e8f5e9; /* Soft Green */
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        border-left: 5px solid #4caf50;
+    }
+
+    /* List styling inside boxes */
+    li {
+        margin-bottom: 10px; /* Space between bullet points */
+    }
+    
+    /* Input field styling */
+    .stTextInput input {
+        border-radius: 20px;
+    }
 </style>
 """, unsafe_allow_html=True)
 
-# --- 2. BACKEND ---
-if "GROQ_API_KEY" in st.secrets:
-    client = Groq(api_key=st.secrets["GROQ_API_KEY"])
-else:
-    st.error("API Key Error.")
+# --- 2. SETUP ---
+if "GROQ_API_KEY" not in st.secrets:
+    st.error("⚠️ Groq API Key is missing!")
     st.stop()
+    
+client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
 # --- 3. UI HEADER ---
 st.title("Professor Proton ⚛️")
 
-with st.expander("⚙️ Settings", expanded=True):
-    c1, c2 = st.columns(2)
-    with c1:
-        selected_class = st.selectbox("Class Level", [6, 7, 8, 9, 10])
-    with c2:
-        language = st.radio("Language", ["English", "Punjabi"])
-        
-    if st.button("Clear Chat", use_container_width=True):
+with st.expander("⚙️ Settings", expanded=False):
+    selected_class = st.selectbox("Class", [6, 7, 8, 9, 10])
+    language = st.radio("Language", ["English", "Punjabi"])
+    if st.button("🧹 Clear Chat"):
         st.session_state.messages = []
         st.rerun()
 
-st.markdown("---")
-
-# --- 4. CHAT LOGIC ---
+# --- 4. CHAT ENGINE ---
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
+# Display History
 for msg in st.session_state.messages:
-    icon = "🧑‍🎓" if msg["role"] == "user" else "⚛️"
-    with st.chat_message(msg["role"], avatar=icon):
-        st.write(msg["text"])
+    with st.chat_message(msg["role"]):
+        # Render HTML content safely
+        st.markdown(msg["content"], unsafe_allow_html=True)
 
-# Input
-user_input = st.chat_input("Enter topic...")
+# User Input
+user_input = st.chat_input("Ask a question (e.g. Force)...")
 
 if user_input:
-    st.session_state.messages.append({"role": "user", "text": user_input})
-    with st.chat_message("user", avatar="🧑‍🎓"):
+    # 1. Show User Input
+    st.session_state.messages.append({"role": "user", "content": user_input})
+    with st.chat_message("user"):
         st.write(user_input)
 
-    with st.chat_message("assistant", avatar="⚛️"):
+    # 2. Generate Structured Answer
+    with st.chat_message("assistant"):
         placeholder = st.empty()
-        full_response = ""
         
-        # LOGIC
-        lang_rule = "Answer in English." if language == "English" else "Answer in Punjabi (Gurmukhi)."
-
         with st.spinner("Thinking..."):
             try:
-                # --- PROMPT: NO HEADERS, JUST LABELS ---
+                # --- THE BRAIN: Forces JSON Output ---
+                # This guarantees the AI cannot write a paragraph.
+                # It MUST give us separate strings.
+                
                 prompt = f"""
-                Act as a Science Teacher for Class {selected_class} (NCERT India).
+                Act as a Science Teacher for Class {selected_class}.
                 Topic: "{user_input}"
                 
-                STRICT RULES:
-                1. DO NOT use Markdown Headers (like ### or ##).
-                2. ONLY use Bold Labels (like **Label:**).
-                3. Keep it brief.
+                You must return valid JSON strictly. 
+                Structure:
+                {{
+                    "definition": "A clear, simple definition.",
+                    "points": ["Point 1", "Point 2", "Point 3"],
+                    "formula": "The formula or equation (or 'None')",
+                    "example": "A real world example."
+                }}
                 
-                OUTPUT FORMAT:
-                
-                **Definition:**
-                (Write definition here)
-                
-                **Key Points:**
-                - (Point 1)
-                - (Point 2)
-                
-                **Formula:**
-                $$ Formula $$ (or write None)
-                
-                **Example:**
-                (Real life example)
-                
-                LANGUAGE: {lang_rule}
+                Language Rule: {"English" if language == "English" else "Punjabi (Gurmukhi)"}
                 """
                 
                 completion = client.chat.completions.create(
                     messages=[{"role": "user", "content": prompt}],
                     model="llama-3.3-70b-versatile",
-                    temperature=0.1, 
+                    response_format={"type": "json_object"} # FORCE JSON MODE
                 )
                 
-                raw_text = completion.choices[0].message.content
+                # Parse the JSON
+                data = json.loads(completion.choices[0].message.content)
                 
-                # --- PYTHON CLEANER (The Fix) ---
-                # This forces a double-enter before every bold label so they never stick together.
-                clean_text = raw_text.replace("**Definition:**", "\n\n**Definition:**")
-                clean_text = clean_text.replace("**Key Points:**", "\n\n**Key Points:**")
-                clean_text = clean_text.replace("**Formula:**", "\n\n**Formula:**")
-                clean_text = clean_text.replace("**Example:**", "\n\n**Example:**")
+                # --- BUILD THE UI MANUALLY ---
+                # We build HTML strings. This ensures exact layout control.
                 
-                # Streaming the CLEAN text
-                for word in clean_text.split():
-                    full_response += word + " "
-                    time.sleep(0.01)
-                    placeholder.markdown(full_response + "▌")
-                placeholder.markdown(full_response)
+                # 1. Definition (Blue)
+                html_output = f"""
+                <div class='definition-box'>
+                    <b>📖 Definition:</b><br>{data['definition']}
+                </div>
+                """
                 
+                # 2. Key Points (Grey) - We loop through the list to make bullets
+                html_output += "<div class='points-box'><b>⚡ Key Points:</b><ul>"
+                for p in data['points']:
+                    html_output += f"<li>{p}</li>"
+                html_output += "</ul></div>"
+                
+                # 3. Formula (Orange) - Only show if it exists
+                if data['formula'] and data['formula'] != "None":
+                    html_output += f"<div class='formula-box'><b>🧮 Formula:</b><br>{data['formula']}</div>"
+                
+                # 4. Example (Green)
+                html_output += f"<div class='example-box'><b>🌍 Real World Example:</b><br>{data['example']}</div>"
+                
+                # Render the final HTML
+                st.markdown(html_output, unsafe_allow_html=True)
+                
+                # Save to memory
+                st.session_state.messages.append({"role": "assistant", "content": html_output})
+                            
             except Exception as e:
-                placeholder.error("Error.")
-                full_response = "Error"
-
-    st.session_state.messages.append({"role": "assistant", "text": full_response})
+                st.error("I couldn't process that. Please try again.")
