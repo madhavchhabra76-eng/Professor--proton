@@ -2,12 +2,12 @@ import streamlit as st
 from groq import Groq
 import json
 import time
-import requests
-import io
+from huggingface_hub import InferenceClient # <--- The Official Tool
 from PIL import Image
+import io
 
 # -----------------------------------------------------------
-# PROFESSOR PROTON - FINAL URL FIX 🎯
+# PROFESSOR PROTON - OFFICIAL CLIENT EDITION 🛡️
 # -----------------------------------------------------------
 
 st.set_page_config(page_title="Professor Proton", page_icon="⚛️", layout="centered")
@@ -37,35 +37,36 @@ if "HF_API_KEY" not in st.secrets:
 
 client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
-# --- 3. IMAGE GENERATOR (Fixed URL + Reliable Model) ---
+# --- 3. OFFICIAL IMAGE GENERATOR ---
 
 def generate_image(prompt_text):
     if "HF_API_KEY" not in st.secrets: return None
     
-    # 🚨 THE FIX: Added '/hf-inference' to the URL
-    # We use 'stable-diffusion-v1-5' because it is 100% reliable on free tier.
-    API_URL = "https://router.huggingface.co/hf-inference/models/runwayml/stable-diffusion-v1-5"
-    headers = {"Authorization": f"Bearer {st.secrets['HF_API_KEY']}"}
-    payload = {"inputs": f"educational science textbook diagram, clear labels, white background, high quality, accurate: {prompt_text}"}
+    # We use the official client. It finds the URL automatically.
+    hf_client = InferenceClient(token=st.secrets["HF_API_KEY"])
+    
+    # We use stable-diffusion-2 because it is very reliable on the official client
+    model_id = "stabilityai/stable-diffusion-2"
     
     for i in range(5): 
         try:
-            response = requests.post(API_URL, headers=headers, json=payload)
-            
-            if response.status_code == 200:
-                image = Image.open(io.BytesIO(response.content))
-                return image
-            elif response.status_code == 503:
-                st.toast("💤 Waking up AI... (10s)")
-                time.sleep(10) 
-                continue 
-            else:
-                st.error(f"HF Error: {response.status_code}")
-                return None
+            # The client handles the request directly
+            image = hf_client.text_to_image(
+                f"educational science textbook diagram, white background, clear, high quality: {prompt_text}",
+                model=model_id
+            )
+            return image
                 
         except Exception as e:
-            st.error(f"Connection Error: {e}")
-            return None
+            # If model is loading (503), the library throws an error we can catch
+            error_msg = str(e)
+            if "503" in error_msg:
+                st.toast("💤 AI is waking up... (waiting 10s)")
+                time.sleep(10)
+                continue
+            else:
+                st.error(f"Image Error: {error_msg}")
+                return None
     return None
 
 def stream_section(placeholder, box_class, title, content):
@@ -162,4 +163,4 @@ if "pending_image_prompt" in st.session_state:
                 del st.session_state["pending_image_prompt"]
                 st.rerun()
             else:
-                st.error("Still loading... try clicking again in 10 seconds.")
+                st.error("Still loading or Error. Try again in 10s.")
