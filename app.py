@@ -2,12 +2,13 @@ import streamlit as st
 from groq import Groq
 import json
 import time
-from huggingface_hub import InferenceClient
-from PIL import Image
+import requests
 import io
+import urllib.parse
+from PIL import Image
 
 # -----------------------------------------------------------
-# PROFESSOR PROTON - BULLETPROOF EDITION 🛡️
+# PROFESSOR PROTON - POLLINATIONS EDITION (Reliable) 🌸
 # -----------------------------------------------------------
 
 st.set_page_config(page_title="Professor Proton", page_icon="⚛️", layout="centered")
@@ -29,58 +30,37 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # --- 2. SETUP API KEYS ---
+# We ONLY need Groq now. Pollinations is free and keyless!
 if "GROQ_API_KEY" not in st.secrets:
     st.error("⚠️ Groq API Key missing.")
     st.stop()
-if "HF_API_KEY" not in st.secrets:
-    st.warning("⚠️ HF_API_KEY missing. Images won't work.")
 
 client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
-# --- 3. ROBUST IMAGE GENERATOR (Tries 3 Models) ---
+# --- 3. POLLINATIONS IMAGE GENERATOR (No Key Required) ---
 
 def generate_image(prompt_text):
-    if "HF_API_KEY" not in st.secrets: return None
+    # We explicitly ask for a scientific style
+    final_prompt = f"educational science textbook diagram, white background, clear, high quality, 4k: {prompt_text}"
     
-    hf_client = InferenceClient(token=st.secrets["HF_API_KEY"])
+    # URL Encode the prompt so it works in a web link
+    encoded_prompt = urllib.parse.quote(final_prompt)
     
-    # LIST OF MODELS TO TRY (If one fails, it tries the next)
-    models_to_try = [
-        "runwayml/stable-diffusion-v1-5",     # Standard Public Model
-        "CompVis/stable-diffusion-v1-4",      # Older Reliable Backup
-        "prompthero/openjourney"              # Creative Backup
-    ]
+    # Pollinations Magic URL
+    url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?nologo=true&width=1024&height=1024"
     
-    for model in models_to_try:
-        try:
-            st.toast(f"🎨 Trying Model: {model}...")
-            image = hf_client.text_to_image(
-                f"educational science textbook diagram, clear, white background: {prompt_text}",
-                model=model
-            )
-            return image # Success! Return the image.
+    try:
+        # We fetch the image from the internet
+        response = requests.get(url, timeout=15)
+        
+        if response.status_code == 200:
+            image = Image.open(io.BytesIO(response.content))
+            return image
+        else:
+            return None
             
-        except Exception as e:
-            # If it's a 503 (Loading), wait and retry same model
-            if "503" in str(e):
-                st.toast(f"💤 Model {model} is waking up... waiting 5s")
-                time.sleep(5)
-                # Try one more time on this model
-                try:
-                    image = hf_client.text_to_image(
-                        f"educational science textbook diagram, clear, white background: {prompt_text}",
-                        model=model
-                    )
-                    return image
-                except:
-                    pass # If it fails twice, move to next model
-            
-            # If it's 401/404, just print error and move to next model
-            print(f"Skipping {model} due to error: {e}")
-            continue
-
-    st.error("❌ All models failed. Please check your HF_API_KEY permissions.")
-    return None
+    except Exception as e:
+        return None
 
 def stream_section(placeholder, box_class, title, content):
     current_text = ""
@@ -168,7 +148,7 @@ if user_input:
 if "pending_image_prompt" in st.session_state:
     st.write("") 
     if st.button("🎨 Generate Diagram for this Topic", type="primary"):
-        with st.spinner("Drawing diagram (Wait ~15s)..."):
+        with st.spinner("Drawing diagram (Wait ~5s)..."):
             prompt = st.session_state["pending_image_prompt"]
             img = generate_image(prompt)
             if img:
@@ -176,4 +156,4 @@ if "pending_image_prompt" in st.session_state:
                 del st.session_state["pending_image_prompt"]
                 st.rerun()
             else:
-                st.error("All models failed. Check logs.")
+                st.error("Error generating image. Please try again.")
