@@ -2,12 +2,12 @@ import streamlit as st
 from groq import Groq
 import json
 import time
-from huggingface_hub import InferenceClient # <--- The Official Tool
+from huggingface_hub import InferenceClient
 from PIL import Image
 import io
 
 # -----------------------------------------------------------
-# PROFESSOR PROTON - OFFICIAL CLIENT EDITION 🛡️
+# PROFESSOR PROTON - PUBLIC MODEL FIX 🔓
 # -----------------------------------------------------------
 
 st.set_page_config(page_title="Professor Proton", page_icon="⚛️", layout="centered")
@@ -37,20 +37,18 @@ if "HF_API_KEY" not in st.secrets:
 
 client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
-# --- 3. OFFICIAL IMAGE GENERATOR ---
+# --- 3. OFFICIAL IMAGE GENERATOR (Public Model) ---
 
 def generate_image(prompt_text):
     if "HF_API_KEY" not in st.secrets: return None
     
-    # We use the official client. It finds the URL automatically.
     hf_client = InferenceClient(token=st.secrets["HF_API_KEY"])
     
-    # We use stable-diffusion-2 because it is very reliable on the official client
-    model_id = "stabilityai/stable-diffusion-2"
+    # 🚨 CHANGED MODEL: This one is 100% Public and Free (No legal gate)
+    model_id = "runwayml/stable-diffusion-v1-5"
     
     for i in range(5): 
         try:
-            # The client handles the request directly
             image = hf_client.text_to_image(
                 f"educational science textbook diagram, white background, clear, high quality: {prompt_text}",
                 model=model_id
@@ -58,7 +56,6 @@ def generate_image(prompt_text):
             return image
                 
         except Exception as e:
-            # If model is loading (503), the library throws an error we can catch
             error_msg = str(e)
             if "503" in error_msg:
                 st.toast("💤 AI is waking up... (waiting 10s)")
