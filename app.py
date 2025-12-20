@@ -4,12 +4,12 @@ import json
 import urllib.parse
 
 # -----------------------------------------------------------
-# PROFESSOR PROTON - SCHEMATIC EDITION (Perfect Text) 📊
+# PROFESSOR PROTON - CLEAN SCHEMATIC EDITION 🧹
 # -----------------------------------------------------------
 
 st.set_page_config(page_title="Professor Proton", page_icon="⚛️", layout="centered")
 
-# --- 1. CSS (Clean & readable) ---
+# --- 1. CSS ---
 st.markdown("""
 <style>
     .stApp { background-color: #ffffff; }
@@ -25,23 +25,22 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# --- 2. SETUP API KEYS ---
+# --- 2. KEYS ---
 if "GROQ_API_KEY" not in st.secrets:
     st.error("⚠️ Groq API Key missing.")
     st.stop()
 
 client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
-# --- 3. DIAGRAM GENERATOR (Using Graphviz Code) ---
+# --- 3. DIAGRAM GENERATOR (With Cleaning Logic) ---
 def get_diagram_url(dot_code):
-    """
-    Turns DOT code into a perfectly rendered image using QuickChart.
-    """
     base_url = "https://quickchart.io/graphviz"
-    # We clean the code to ensure it fits in the URL
-    clean_dot = dot_code.strip().replace("\n", " ")
+    
+    # 🧹 CLEANER FUNCTION: Removes Markdown backticks if the AI adds them
+    clean_dot = dot_code.replace("```dot", "").replace("```", "").strip()
+    
     encoded_dot = urllib.parse.quote(clean_dot)
-    return f"{base_url}?graph={encoded_dot}&width=600&height=400&format=png"
+    return f"{base_url}?graph={encoded_dot}&width=500&height=300&format=png"
 
 # --- 4. UI HEADER ---
 st.title("Professor Proton ⚛️")
@@ -53,7 +52,7 @@ with st.expander("⚙️ Settings", expanded=False):
         st.session_state.pop("pending_diagram_code", None)
         st.rerun()
 
-# --- 5. CHAT HISTORY ---
+# --- 5. HISTORY ---
 if "messages" not in st.session_state: st.session_state.messages = []
 
 for msg in st.session_state.messages:
@@ -80,17 +79,17 @@ if user_input:
 
         with st.spinner("Thinking..."):
             try:
-                # We ask Groq to write code for a diagram, not a description
                 prompt = f"""
                 Act as a Science Teacher for Class {selected_class}. Topic: "{user_input}"
                 
-                1. Content: Standard JSON structure (definition, points, formula, example).
-                2. Diagram: Write 'graphviz_dot' code for a FLOWCHART explaining this concept.
-                   - Use 'digraph G {{ rankdir=LR; ... }}'
-                   - Use rectangular boxes [shape=box, style=filled, fillcolor="#E3F2FD"]
-                   - Keep labels short and clear.
+                1. Content: Standard JSON structure.
+                2. Diagram: Write RAW 'graphviz_dot' code for a FLOWCHART.
+                   - START with 'digraph G {{'
+                   - DO NOT use markdown backticks.
+                   - Use rankdir=LR;
+                   - Use rectangular nodes: node [shape=box, style=filled, fillcolor="#E3F2FD"];
                    
-                Return JSON format:
+                Return JSON:
                 {{
                     "definition": "...",
                     "points": ["..."],
@@ -109,10 +108,8 @@ if user_input:
                 )
                 data = json.loads(completion.choices[0].message.content)
                 
-                # Save the code for the button
                 st.session_state["pending_diagram_code"] = data.get("graphviz_dot", None)
 
-                # Render Text
                 full_final_html += f"<div class='definition-box'><b>📖 Definition:</b><br>{data['definition']}</div>"
                 def_ph.markdown(full_final_html, unsafe_allow_html=True)
                 
@@ -133,7 +130,7 @@ if user_input:
             except Exception as e:
                 st.error(f"Error: {str(e)}")
 
-# --- 7. BUTTON FOR DIAGRAM ---
+# --- 7. BUTTON ---
 if "pending_diagram_code" in st.session_state:
     st.write("") 
     if st.button("📊 Show Process Diagram (Perfect Text)", type="primary"):
