@@ -7,7 +7,7 @@ import io
 from PIL import Image
 
 # -----------------------------------------------------------
-# PROFESSOR PROTON - SMART RETRY EDITION 🧠
+# PROFESSOR PROTON - FINAL FIX (UPDATED URL) 🚀
 # -----------------------------------------------------------
 
 st.set_page_config(page_title="Professor Proton", page_icon="⚛️", layout="centered")
@@ -37,16 +37,17 @@ if "HF_API_KEY" not in st.secrets:
 
 client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
-# --- 3. SMART IMAGE GENERATOR (With Retry Logic) ---
+# --- 3. SMART IMAGE GENERATOR (New Router URL) ---
 
 def generate_image(prompt_text):
     if "HF_API_KEY" not in st.secrets: return None
     
-    API_URL = "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0"
+    # 🚨 UPDATED URL HERE: Changed 'api-inference' to 'router'
+    API_URL = "https://router.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0"
     headers = {"Authorization": f"Bearer {st.secrets['HF_API_KEY']}"}
     payload = {"inputs": f"educational science textbook diagram, clear labels, white background, high quality, accurate: {prompt_text}"}
     
-    # RETRY LOOP: Tries 3 times if the model is "sleeping"
+    # RETRY LOOP: Tries 5 times if the model is "sleeping"
     for i in range(5): 
         try:
             response = requests.post(API_URL, headers=headers, json=payload)
