@@ -5,7 +5,7 @@ import time
 import requests
 
 # -----------------------------------------------------------
-# PROFESSOR PROTON - MAXIMUM DETAIL PUNJABI 🧠
+# PROFESSOR PROTON - ULTRA DETAILED PUNJABI EDITION 🧬
 # -----------------------------------------------------------
 
 st.set_page_config(page_title="Professor Proton", page_icon="⚛️", layout="centered")
@@ -38,7 +38,7 @@ if "GROQ_API_KEY" not in st.secrets: st.error("⚠️ missing GROQ_API_KEY"); st
 
 client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
-# --- 3. GOOGLE SEARCH ---
+# --- 3. GOOGLE SEARCH (Fixed Syntax Error) ---
 def get_google_images(search_query):
     if "GOOGLE_API_KEY" not in st.secrets or "GOOGLE_CX" not in st.secrets:
         return [], "Google keys missing."
@@ -47,12 +47,29 @@ def get_google_images(search_query):
     cx = st.secrets["GOOGLE_CX"]
     url = "https://www.googleapis.com/customsearch/v1"
     
-    params = { 'q': search_query, 'key': api_key, 'cx': cx, 'searchType': 'image', 'num': 3, 'safe': 'active', 'imgType': 'clipart' }
+    params = { 
+        'q': search_query, 
+        'key': api_key, 
+        'cx': cx, 
+        'searchType': 'image', 
+        'num': 3, 
+        'safe': 'active', 
+        'imgType': 'clipart' 
+    }
     
     try:
         response = requests.get(url, params=params)
         results = response.json()
         image_links = []
+        
+        # 🚨 FIX: Ensure the colon is present in the loop below
         if 'items' in results:
-            for item in results
-
+            for item in results['items']:
+                image_links.append(item['link'])
+            return image_links, None
+        else:
+            return [], "No images found."
+            
+    except Exception as e:
+        return [], f
+        
