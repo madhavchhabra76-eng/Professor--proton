@@ -5,7 +5,7 @@ import time
 import requests
 
 # -----------------------------------------------------------
-# PROFESSOR PROTON - MIXTRAL EDITION (Stable & Creative) 🌪️
+# PROFESSOR PROTON - STABLE LLAMA 3.3 EDITION 🦙
 # -----------------------------------------------------------
 
 st.set_page_config(page_title="Professor Proton", page_icon="⚛️", layout="centered")
@@ -121,22 +121,20 @@ if user_input:
         with st.spinner("Thinking..."):
             try:
                 # ----------------------------------------------------
-                # 🚨 MODEL SWITCH: MIXTRAL 8x7B (Stable)
+                # 🚨 STABLE MODEL: LLAMA 3.3 (With Better Punjabi Prompts)
                 # ----------------------------------------------------
                 
                 lang_instruction = "English. Write a long, enthusiastic explanation (approx 150 words). Start with 'Hello there, young scientist!'."
                 
                 if language == "Punjabi":
-                    # Using "Tablet Proof" strings
+                    # We force Llama to use "Hinglish style" logic but write in Gurmukhi
                     lang_instruction = (
                         "Punjabi (GURMUKHI SCRIPT ONLY). "
-                        "CRITICAL: Write a VERY LONG, DETAILED explanation (150-200 words). "
-                        "Do not just summarize. Explain the science like a story. "
-                        "1. Start with 'ਸਤ ਸ੍ਰੀ ਅਕਾਲ!'. "
-                        "2. Explain the reaction with Moisture (ਨਮੀ) and Oxygen. "
-                        "3. Explain the heat (ਗਰਮੀ) and fire (ਅੱਗ) risk. "
-                        "4. Explain how Kerosene cuts the air supply. "
-                        "Write naturally."
+                        "RULES FOR BETTER PUNJABI: "
+                        "1. Do NOT use complex textbook words. Use simple spoken Punjabi. "
+                        "2. For hard science terms (like 'Reaction' or 'Oxygen'), write the English word in Punjabi script (e.g. 'ਰਿਐਕਸ਼ਨ', 'ਆਕਸੀਜਨ'). "
+                        "3. Structure: Start with 'ਸਤ ਸ੍ਰੀ ਅਕਾਲ!'. Explain the concept like a story. "
+                        "4. LENGTH: Must be 150+ words. Detailed explanation of the 'Why' and 'How'. "
                     )
 
                 prompt = f"""
@@ -159,8 +157,8 @@ if user_input:
                 
                 completion = client.chat.completions.create(
                     messages=[{"role": "user", "content": prompt}],
-                    # 🚨 NEW MODEL ID: Mixtral 8x7B (Reliable)
-                    model="mixtral-8x7b-32768",
+                    # 🚨 BACK TO THE STABLE MODEL
+                    model="llama-3.3-70b-versatile",
                     response_format={"type": "json_object"}
                 )
                 data = json.loads(completion.choices[0].message.content)
