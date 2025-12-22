@@ -141,7 +141,7 @@ if user_input:
                     )
 
                 prompt = (
-                    f"You are an expert Science Tutor for Class {selected_class}. "
+                    f"Act as High and middle school science teacher that answers anything asked related to science. Be a kind and cooperative teacher that want students to learn {selected_class}. "
                     f"Question: '{user_input}'. "
                     f"Language: {lang_instruction} "
                     "Return valid JSON: { \"answer\": \"...\", \"google_search_query\": \"english query\" }"
