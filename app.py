@@ -5,12 +5,12 @@ import time
 import requests
 
 # -----------------------------------------------------------
-# PROFESSOR PROTON - STABLE & SMART PUNJABI EDITION 🦁
+# PROFESSOR PROTON - THE TRANSLATOR EDITION 🔄
 # -----------------------------------------------------------
 
 st.set_page_config(page_title="Professor Proton", page_icon="⚛️", layout="centered")
 
-# --- 1. CSS (Clean & Purple) ---
+# --- 1. CSS ---
 st.markdown("""
 <style>
     .stApp { background-color: #ffffff; }
@@ -118,40 +118,42 @@ if user_input:
     with st.chat_message("assistant"):
         answer_ph = st.empty()
         
-        with st.spinner("Writing..."):
+        with st.spinner("Analyzing & Translating..."):
             try:
                 # ----------------------------------------------------
-                # 🚨 THE "SUPER PROMPT" (Fixes Robotic Punjabi)
+                # 🚨 THE "TRANSLATION TRICK" PROMPT
+                # We ask for ENGLISH content first, then force translation.
                 # ----------------------------------------------------
                 
-                # We use simple string concatenation to avoid syntax errors on tablets
-                lang_instruction = "English. Write a long, enthusiastic explanation (approx 150 words). Start with 'Hello there, young scientist!'."
-                
-                if language == "Punjabi":
-                    lang_instruction = (
-                        "Punjabi (GURMUKHI SCRIPT ONLY). "
-                        "RULES FOR NATURAL PUNJABI: "
-                        "1. Do NOT use complex textbook words. Use simple SPOKEN Punjabi. "
-                        "2. For science words like 'Oxygen', 'Reaction', 'Kerosene', 'Energy', write the English word using Punjabi letters (e.g. 'ਆਕਸੀਜਨ', 'ਰਿਐਕਸ਼ਨ', 'ਐਨਰਜੀ'). "
-                        "3. EXPLANATION: Write a 150-word detailed story. "
-                        "4. START: 'ਸਤ ਸ੍ਰੀ ਅਕਾਲ! ਆਓ ਇਸਨੂੰ ਸਮਝੀਏ।' "
-                        "5. STRUCTURE: Explain the 'Why' (Reaction with air) and the 'Danger' (Fire/Blast) and the 'Solution' (Oil layer)."
-                    )
+                system_instruction = (
+                    "You are an expert Science Teacher. "
+                    "Step 1: Create a VERY DETAILED, LONG explanation in ENGLISH (150-200 words). "
+                    "Step 2: If the user asked for Punjabi, TRANSLATE that exact English explanation to Punjabi. "
+                    "Step 3: Return ONLY the final output in the requested language."
+                )
 
-                # Using a standard string for the prompt
+                if language == "Punjabi":
+                    lang_req = (
+                        "OUTPUT LANGUAGE: Punjabi (Gurmukhi Script). "
+                        "CRITICAL: Do NOT summarize. Translate the full detail. "
+                        "Start with 'ਸਤ ਸ੍ਰੀ ਅਕਾਲ!'. "
+                        "Use English words for scientific terms (like 'Reaction' -> 'ਰਿਐਕਸ਼ਨ')."
+                    )
+                else:
+                    lang_req = "OUTPUT LANGUAGE: English. Start with 'Hello there, young scientist!'."
+
+                # The Prompt
                 prompt = (
-                    f"Act as an Expert Science Teacher for Class {selected_class}. "
-                    f"Topic: '{user_input}' "
-                    f"Language Instructions: {lang_instruction} "
-                    "TASK: Write a detailed, high-quality textbook answer. "
-                    "IMPORTANT: Output valid JSON only. "
-                    "JSON KEYS: 'answer', 'google_search_query' "
-                    "JSON Example: { \"answer\": \"Full explanation...\", \"google_search_query\": \"english query\" }"
+                    f"Topic: '{user_input}' for Class {selected_class}. "
+                    f"{lang_req} "
+                    "Provide the result in JSON format: { \"answer\": \"...\", \"google_search_query\": \"...\" }"
                 )
                 
                 completion = client.chat.completions.create(
-                    messages=[{"role": "user", "content": prompt}],
-                    # 🚨 STABLE MODEL
+                    messages=[
+                        {"role": "system", "content": system_instruction},
+                        {"role": "user", "content": prompt}
+                    ],
                     model="llama-3.3-70b-versatile",
                     response_format={"type": "json_object"}
                 )
