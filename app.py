@@ -55,4 +55,4 @@ def get_google_images(search_query):
         image_links = []
         if 'items' in results:
             for item in results
-            
+
