@@ -5,32 +5,32 @@ import time
 import requests
 
 # -----------------------------------------------------------
-# PROFESSOR PROTON - PUNJABI MASTERJI EDITION 👨‍🏫
+# PROFESSOR PROTON - DETAILED GURMUKHI EDITION 👳🏽‍♂️
 # -----------------------------------------------------------
 
 st.set_page_config(page_title="Professor Proton", page_icon="⚛️", layout="centered")
 
-# --- 1. CSS (Clean & Readable) ---
+# --- 1. CSS (Purple Theme like Client Wants) ---
 st.markdown("""
 <style>
     .stApp { background-color: #ffffff; }
     p, h1, h2, h3, li, div, span, b, strong { color: #000000 !important; font-family: 'Helvetica Neue', sans-serif; }
     
-    /* TEACHER BOX */
+    /* TEACHER BOX - PURPLE STYLE */
     .tutor-box { 
-        background-color: #f3f4f6; 
+        background-color: #f3f0ff; /* Light purple tint */
         padding: 25px; 
         border-radius: 15px; 
         margin-bottom: 20px; 
-        border-left: 6px solid #8b5cf6; /* Purple line like the client wants */
-        font-size: 19px; 
+        border-left: 6px solid #7c3aed; /* Deep Purple */
+        font-size: 18px; 
         line-height: 1.8; 
         color: #1f2937;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
     }
     
     .stButton button { border-radius: 20px; width: 100%; font-weight: bold; }
-    button[kind="primary"] { background-color: #8b5cf6 !important; border: none; color: white !important; }
+    button[kind="primary"] { background-color: #7c3aed !important; border: none; color: white !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -99,8 +99,8 @@ for msg in st.session_state.messages:
         else:
              st.markdown(msg["content"], unsafe_allow_html=True)
 
-# --- 7. MAIN LOGIC (TEACHER MODE) ---
-user_input = st.chat_input("Ask a question (e.g. Why is sodium kept in kerosene?)...")
+# --- 7. MAIN LOGIC ---
+user_input = st.chat_input("Ask a question...")
 
 if user_input:
     st.session_state.pop("pending_search_query", None)
@@ -113,40 +113,40 @@ if user_input:
         with st.spinner("Writing..."):
             try:
                 # ----------------------------------------------------
-                # 🚨 THE "PUNJABI MASTERJI" PROMPT
+                # 🚨 THE "GURMUKHI DETAIL" PROMPT
                 # ----------------------------------------------------
                 
                 lang_instruction = """
-                English. Write clear, simple student-friendly explanations.
+                English. Write a detailed paragraph explaining the concept simply.
                 """
                 
                 if language == "Punjabi":
                     lang_instruction = """
-                    Punjabi (Gurmukhi).
-                    ROLE: You are a friendly, polite Punjabi school teacher.
+                    Punjabi (GURMUKHI SCRIPT ONLY). 
+                    IMPORTANT: Write in proper Punjabi characters (e.g. ਸਤ ਸ੍ਰੀ ਅਕਾਲ). 
+                    Do NOT use Roman/English characters.
                     
-                    RULES:
-                    1. START with a warm greeting like "Sat Sri Akal ji!" or "Hanji,".
-                    2. TONE: Conversational and simple. Explain like you are telling a story to a child.
-                    3. FORMAT: Do NOT use asterisks (**). Keep the text clean. 
-                    4. CONTENT: Use simple words. For example, mention 'Regmar' (sandpaper) for cleaning magnesium.
-                    5. ENDING: End with a polite closing like "Umeed hai tuhanu samajh aa gaya hovega!"
+                    STRUCTURE:
+                    1. Greeting: "ਸਤ ਸ੍ਰੀ ਅਕਾਲ! ਮੈਨੂੰ ਤੁਹਾਡੀ ਮਦਦ ਕਰਕੇ ਖੁਸ਼ੀ ਹੋ ਰਹੀ ਹੈ।"
+                    2. Explanation: Write a detailed 5-8 sentence explanation. Explain the 'Why' and 'How' deeply. 
+                    3. Tone: Friendly, like a teacher. Use simple words.
+                    4. Formatting: Do not use stars (**).
                     """
 
                 prompt = f"""
-                Act as a Friendly Science Teacher for Class {selected_class}. 
+                Act as a Friendly Science Tutor for Class {selected_class}. 
                 Topic: "{user_input}"
                 Language Instructions: {lang_instruction}
 
                 TASK:
-                Write a single, warm, easy-to-understand paragraph answering the student's question.
+                Write a detailed, warm, helpful answer. It should be long enough to fully explain the concept to a student.
                 
                 JSON KEYS: "answer", "google_search_query"
 
-                JSON Structure:
+                JSON Example (Punjabi):
                 {{
-                    "answer": "Sat Sri Akal ji! Magnesium nu saaf karn da kaaran eh hai ki...", 
-                    "google_search_query": "english search query for diagrams"
+                    "answer": "ਸਤ ਸ੍ਰੀ ਅਕਾਲ! ਇਸਦਾ ਮੁੱਖ ਕਾਰਨ ਇਹ ਹੈ ਕਿ...", 
+                    "google_search_query": "english query for diagram"
                 }}
                 """
                 
@@ -159,7 +159,7 @@ if user_input:
                 
                 st.session_state["pending_search_query"] = data.get("google_search_query", user_input + " diagram")
 
-                # Stream the Tutor Answer
+                # Stream the Answer
                 final_html = stream_text(answer_ph, data['answer'])
                 
                 st.session_state.messages.append({"role": "assistant", "content": final_html})
