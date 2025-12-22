@@ -1,11 +1,11 @@
 import streamlit as st
-from groq import Groq
+from openai import OpenAI
 import json
 import time
 import requests
 
 # -----------------------------------------------------------
-# PROFESSOR PROTON - PURE GURMUKHI EDITION ☬
+# PROFESSOR PROTON - GPT-4o EDITION (GitHub Models) 🧠
 # -----------------------------------------------------------
 
 st.set_page_config(page_title="Professor Proton", page_icon="⚛️", layout="centered")
@@ -34,11 +34,15 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # --- 2. KEYS CHECK ---
-if "GROQ_API_KEY" not in st.secrets:
-    st.error("⚠️ GROQ_API_KEY is missing.")
+if "GITHUB_TOKEN" not in st.secrets:
+    st.error("⚠️ GITHUB_TOKEN is missing. Please add it to Secrets.")
     st.stop()
 
-client = Groq(api_key=st.secrets["GROQ_API_KEY"])
+# 🚨 CONNECTING TO GITHUB MODELS (Using OpenAI Client)
+client = OpenAI(
+    base_url="https://models.inference.ai.azure.com",
+    api_key=st.secrets["GITHUB_TOKEN"],
+)
 
 # --- 3. GOOGLE SEARCH FUNCTION ---
 def get_google_images(search_query):
@@ -118,37 +122,34 @@ if user_input:
     with st.chat_message("assistant"):
         answer_ph = st.empty()
         
-        with st.spinner("Writing..."):
+        with st.spinner("Asking GPT-4o..."):
             try:
                 # ----------------------------------------------------
-                # 🚨 THE "PURE GURMUKHI" PROMPT
+                # 🚨 GPT-4o PROMPT (Excellent at Punjabi)
                 # ----------------------------------------------------
                 
-                lang_instruction = "English. Write a long, enthusiastic explanation (approx 150 words). Start with 'Hello there, young scientist!'."
+                lang_instruction = "English. Write a detailed, friendly explanation."
                 
                 if language == "Punjabi":
                     lang_instruction = (
-                        "Punjabi (GURMUKHI SCRIPT ONLY). "
-                        "STRICT RULES: "
-                        "1. Write ONLY in Gurmukhi Script (ਪੰਜਾਬੀ). Do NOT use English letters for normal words. "
-                        "   - BAD: 'Asal vich' "
-                        "   - GOOD: 'ਅਸਲ ਵਿੱਚ' "
-                        "2. For scientific terms, write the Punjabi word followed by English in brackets. "
-                        "   - Example: 'ਸੋਡੀਅਮ (Sodium)', 'ਆਕਸੀਜਨ (Oxygen)', 'ਰਿਐਕਸ਼ਨ (Reaction)'. "
-                        "3. LENGTH: Write a very detailed 200-word explanation. "
-                        "4. STRUCTURE: Start with 'ਸਤ ਸ੍ਰੀ ਅਕਾਲ!'. Explain the Science, the Danger, and the Solution in detail."
+                        "Punjabi (GURMUKHI SCRIPT). "
+                        "1. Write a LONG, STORY-LIKE explanation (at least 150 words). "
+                        "2. Use simple, spoken Punjabi (not formal bookish Punjabi). "
+                        "3. Write English science terms in Punjabi script (e.g. 'ਆਕਸੀਜਨ' for Oxygen). "
+                        "4. Start with 'ਸਤ ਸ੍ਰੀ ਅਕਾਲ!'. "
+                        "5. Break it into paragraphs for easy reading."
                     )
 
                 prompt = (
-                    f"Topic: '{user_input}' for Class {selected_class}. "
-                    f"{lang_instruction} "
-                    "Provide the result in valid JSON format only. "
-                    "JSON Example: { \"answer\": \"...\", \"google_search_query\": \"english query\" }"
+                    f"You are an expert Science Tutor for Class {selected_class}. "
+                    f"Question: '{user_input}'. "
+                    f"Language: {lang_instruction} "
+                    "Return valid JSON: { \"answer\": \"...\", \"google_search_query\": \"english query\" }"
                 )
                 
                 completion = client.chat.completions.create(
                     messages=[{"role": "user", "content": prompt}],
-                    model="llama-3.3-70b-versatile",
+                    model="gpt-4o",  # 🚨 USING GPT-4o
                     response_format={"type": "json_object"}
                 )
                 data = json.loads(completion.choices[0].message.content)
