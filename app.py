@@ -5,33 +5,31 @@ import time
 import requests
 
 # -----------------------------------------------------------
-# PROFESSOR PROTON - NOTEBOOK MODE (Direct Copy) 📓
+# PROFESSOR PROTON - FRIENDLY TUTOR EDITION 👨‍🏫
 # -----------------------------------------------------------
 
 st.set_page_config(page_title="Professor Proton", page_icon="⚛️", layout="centered")
 
-# --- 1. CSS (Notebook Style) ---
+# --- 1. CSS (Clean & Readable) ---
 st.markdown("""
 <style>
     .stApp { background-color: #ffffff; }
-    p, h1, h2, h3, li, div, span, b { color: #000000 !important; font-family: 'Helvetica Neue', sans-serif; }
+    p, h1, h2, h3, li, div, span, b, strong { color: #000000 !important; font-family: 'Helvetica Neue', sans-serif; }
     
-    /* THE NOTEBOOK BOX */
-    .notebook-box { 
-        background-color: #ffffff; 
+    /* TUTOR ANSWER BOX */
+    .tutor-box { 
+        background-color: #f0f7ff; 
         padding: 25px; 
-        border-radius: 5px; 
+        border-radius: 12px; 
         margin-bottom: 20px; 
-        border: 1px solid #d1d1d1;
-        border-left: 8px solid #4285F4; 
-        font-size: 18px;
-        line-height: 1.8; /* More spacing for reading */
-        font-family: 'Georgia', serif; /* Looks like book text */
-        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        border: 1px solid #dbeafe;
+        font-size: 19px; /* Bigger text for easy reading */
+        line-height: 1.8; 
+        color: #1e293b;
     }
     
     .stButton button { border-radius: 20px; width: 100%; font-weight: bold; }
-    button[kind="primary"] { background-color: #4285F4 !important; border: none; color: white !important; }
+    button[kind="primary"] { background-color: #4F46E5 !important; border: none; color: white !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -72,9 +70,9 @@ def stream_text(placeholder, text):
     current_text = ""
     for word in text.split():
         current_text += word + " "
-        placeholder.markdown(f"<div class='notebook-box'>{current_text} ▌</div>", unsafe_allow_html=True)
+        placeholder.markdown(f"<div class='tutor-box'>{current_text} ▌</div>", unsafe_allow_html=True)
         time.sleep(0.02)
-    final_html = f"<div class='notebook-box'>{current_text}</div>"
+    final_html = f"<div class='tutor-box'>{current_text}</div>"
     placeholder.markdown(final_html, unsafe_allow_html=True)
     return final_html
 
@@ -100,8 +98,8 @@ for msg in st.session_state.messages:
         else:
              st.markdown(msg["content"], unsafe_allow_html=True)
 
-# --- 7. MAIN LOGIC (NOTEBOOK MODE) ---
-user_input = st.chat_input("Ask a question (e.g. Photosynthesis)...")
+# --- 7. MAIN LOGIC (TUTOR MODE) ---
+user_input = st.chat_input("Ask a question (e.g. Why is sodium kept in kerosene?)...")
 
 if user_input:
     st.session_state.pop("pending_search_query", None)
@@ -111,34 +109,39 @@ if user_input:
     with st.chat_message("assistant"):
         answer_ph = st.empty()
         
-        with st.spinner("Writing Answer..."):
+        with st.spinner("Writing..."):
             try:
                 # ----------------------------------------------------
-                # 🚨 THE "DIRECT COPY" PROMPT
+                # 🚨 THE "FRIENDLY TUTOR" PROMPT
                 # ----------------------------------------------------
                 
                 lang_instruction = "English"
                 if language == "Punjabi":
-                    lang_instruction = "Punjabi (Gurmukhi). Use standard textbook language. Do NOT use poetic or complex words. Just clear, simple sentences."
+                    lang_instruction = """
+                    Punjabi (Gurmukhi Script). 
+                    CRITICAL: Write like a friendly teacher explaining to a student.
+                    1. Use simple, conversational Punjabi words (avoid complex formal translation).
+                    2. Explain the 'Why' clearly.
+                    3. Highlight key terms in **bold** (e.g. **Sodium**, **Kerosene**).
+                    """
 
                 prompt = f"""
-                Act as a Textbook Answer Key for Class {selected_class}. 
+                You are a Friendly Science Tutor for Class {selected_class}. 
                 Topic: "{user_input}"
                 Language: {lang_instruction}
 
                 INSTRUCTIONS:
-                1. **Goal**: Write a paragraph that a student can COPY DIRECTLY into their notebook.
-                2. **No Chatting**: Do NOT write "Here is the answer" or "Sure". Start directly with the answer.
-                3. **Structure**: 
-                   - Start with a clear definition.
-                   - Explain how it works in 1-2 sentences.
-                   - End with a real-world example.
-                   - Keep it all in ONE paragraph.
+                1. **Goal**: Write a clear, simple explanation that a student can copy for homework.
+                2. **Style**: 
+                   - Be direct but helpful. 
+                   - Use bolding for important scientific terms.
+                   - If asking "Why", start with the reason.
+                3. **Format**: ONE single paragraph. No bullet points.
                 4. **Keys**: JSON keys must be "answer" and "google_search_query".
 
                 JSON Structure:
                 {{
-                    "answer": "Photosynthesis is the process...", 
+                    "answer": "Sodium is a very reactive metal... (Write full explanation here)", 
                     "google_search_query": "concise english query for google images"
                 }}
                 """
@@ -152,7 +155,7 @@ if user_input:
                 
                 st.session_state["pending_search_query"] = data.get("google_search_query", user_input + " diagram")
 
-                # Stream the Notebook Answer
+                # Stream the Tutor Answer
                 final_html = stream_text(answer_ph, data['answer'])
                 
                 st.session_state.messages.append({"role": "assistant", "content": final_html})
