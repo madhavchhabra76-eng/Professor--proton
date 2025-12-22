@@ -5,7 +5,7 @@ import time
 import requests
 
 # -----------------------------------------------------------
-# PROFESSOR PROTON - THE TRANSLATOR EDITION 🔄
+# PROFESSOR PROTON - STORYTELLER EDITION (Kahani Mode) 📖
 # -----------------------------------------------------------
 
 st.set_page_config(page_title="Professor Proton", page_icon="⚛️", layout="centered")
@@ -118,42 +118,37 @@ if user_input:
     with st.chat_message("assistant"):
         answer_ph = st.empty()
         
-        with st.spinner("Analyzing & Translating..."):
+        with st.spinner("Thinking..."):
             try:
                 # ----------------------------------------------------
-                # 🚨 THE "TRANSLATION TRICK" PROMPT
-                # We ask for ENGLISH content first, then force translation.
+                # 🚨 THE "KAHANI" PROMPT (Forces Length & Detail)
                 # ----------------------------------------------------
                 
-                system_instruction = (
-                    "You are an expert Science Teacher. "
-                    "Step 1: Create a VERY DETAILED, LONG explanation in ENGLISH (150-200 words). "
-                    "Step 2: If the user asked for Punjabi, TRANSLATE that exact English explanation to Punjabi. "
-                    "Step 3: Return ONLY the final output in the requested language."
-                )
-
+                lang_instruction = "English. Write a long, enthusiastic explanation (approx 150 words). Start with 'Hello there, young scientist!'."
+                
                 if language == "Punjabi":
-                    lang_req = (
-                        "OUTPUT LANGUAGE: Punjabi (Gurmukhi Script). "
-                        "CRITICAL: Do NOT summarize. Translate the full detail. "
-                        "Start with 'ਸਤ ਸ੍ਰੀ ਅਕਾਲ!'. "
-                        "Use English words for scientific terms (like 'Reaction' -> 'ਰਿਐਕਸ਼ਨ')."
+                    lang_instruction = (
+                        "Punjabi (GURMUKHI SCRIPT ONLY). "
+                        "CRITICAL RULES FOR LENGTH & DETAIL: "
+                        "1. MINIMUM LENGTH: Write at least 12-15 sentences. Do NOT summarize. "
+                        "2. TONE: Chatty and friendly. Use filler phrases like 'Asal vich...' (Actually), 'Dekho bacheyo...' (Look children), 'Dilchasp gal eh hai...' (The interesting thing is). "
+                        "3. HINGLISH TERMS: Write English science terms in Punjabi script (e.g. 'Oxygen' -> 'ਆਕਸੀਜਨ'). "
+                        "4. STRUCTURE: "
+                        "   - Para 1: Introduction. 'Sat Sri Akal!'. Explain that Sodium is very 'Reactive' (React karda hai). "
+                        "   - Para 2: The Danger. Explain 'Moisture' (Hawa di nami) and 'Heat' (Garmi/Agg). Tell a story about how it catches fire. "
+                        "   - Para 3: The Solution. Explain how Kerosene acts like a 'Blanket' or 'Barrier' layer. "
                     )
-                else:
-                    lang_req = "OUTPUT LANGUAGE: English. Start with 'Hello there, young scientist!'."
 
-                # The Prompt
                 prompt = (
                     f"Topic: '{user_input}' for Class {selected_class}. "
-                    f"{lang_req} "
-                    "Provide the result in JSON format: { \"answer\": \"...\", \"google_search_query\": \"...\" }"
+                    f"{lang_instruction} "
+                    "Provide the result in valid JSON format only. "
+                    "JSON Example: { \"answer\": \"(Your long 200-word answer here...)\", \"google_search_query\": \"english query\" }"
                 )
                 
                 completion = client.chat.completions.create(
-                    messages=[
-                        {"role": "system", "content": system_instruction},
-                        {"role": "user", "content": prompt}
-                    ],
+                    messages=[{"role": "user", "content": prompt}],
+                    # 🚨 USING STABLE MODEL
                     model="llama-3.3-70b-versatile",
                     response_format={"type": "json_object"}
                 )
