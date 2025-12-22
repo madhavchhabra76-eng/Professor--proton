@@ -5,7 +5,7 @@ import time
 import requests
 
 # -----------------------------------------------------------
-# PROFESSOR PROTON - ROBUST & DETAILED EDITION 🚀
+# PROFESSOR PROTON - TABLET PROOF EDITION 📱
 # -----------------------------------------------------------
 
 st.set_page_config(page_title="Professor Proton", page_icon="⚛️", layout="centered")
@@ -121,9 +121,76 @@ if user_input:
         with st.spinner("Writing detailed explanation..."):
             try:
                 # ----------------------------------------------------
-                # 🚨 PROMPT: FORCE LONG PUNJABI STORIES
+                # 🚨 PROMPT (SAFER STRING FORMAT)
                 # ----------------------------------------------------
                 
-                lang_instruction = """
-                English. Write a long, enthusiastic explanation (
+                lang_instruction = "English. Write a long, enthusiastic explanation (approx 150 words). Start with 'Hello there, young scientist!'."
                 
+                if language == "Punjabi":
+                    # Using simple strings joined together to prevent syntax errors
+                    lang_instruction = (
+                        "Punjabi (GURMUKHI SCRIPT ONLY). "
+                        "CRITICAL INSTRUCTION: You must provide a LONG, DETAILED explanation (Same length as English). "
+                        "STRUCTURE: "
+                        "1. Greeting: 'ਸਤ ਸ੍ਰੀ ਅਕਾਲ! ਆਓ ਇਸ ਬਾਰੇ ਵਿਸਥਾਰ ਵਿੱਚ ਜਾਣੀਏ।' "
+                        "2. Part 1 (The Reaction): Explain DETAILED science. Mention how Sodium reacts with Moisture (ਨਮੀ) and Oxygen violently. "
+                        "3. Part 2 (The Danger): Explain that this reaction creates Heat (ਗਰਮੀ) and Hydrogen gas, which can cause a Fire (ਅੱਗ). "
+                        "4. Part 3 (The Solution): Explain deeply how Kerosene creates a barrier layer that cuts off contact with air. "
+                        "Do NOT summarize. Write a full scientific story in simple Punjabi (150-200 words)."
+                    )
+
+                prompt = f"""
+                Act as an Expert Science Teacher for Class {selected_class}. 
+                Topic: "{user_input}"
+                Language Instructions: {lang_instruction}
+
+                TASK:
+                Write a detailed, high-quality textbook answer. 
+                Do not be brief. Be thorough.
+                
+                JSON KEYS: "answer", "google_search_query"
+
+                JSON Example:
+                {{
+                    "answer": "Your long detailed answer here...", 
+                    "google_search_query": "english query for diagram"
+                }}
+                """
+                
+                completion = client.chat.completions.create(
+                    messages=[{"role": "user", "content": prompt}],
+                    model="llama-3.3-70b-versatile",
+                    response_format={"type": "json_object"}
+                )
+                data = json.loads(completion.choices[0].message.content)
+                
+                st.session_state["pending_search_query"] = data.get("google_search_query", user_input + " diagram")
+
+                # Stream the Answer
+                final_html = stream_text(answer_ph, data['answer'])
+                
+                st.session_state.messages.append({"role": "assistant", "content": final_html})
+                st.rerun()
+
+            except Exception as e:
+                st.error(f"Error: {str(e)}")
+
+# --- 8. BUTTON ---
+if "pending_search_query" in st.session_state:
+    st.write("") 
+    if "GOOGLE_API_KEY" in st.secrets:
+        query = st.session_state["pending_search_query"]
+        if st.button(f"🔎 Find Diagrams for: '{query}'", type="primary"):
+            with st.spinner("Searching Google..."):
+                img_links, error = get_google_images(query)
+                
+                if img_links:
+                    cols = st.columns(3)
+                    for i, link in enumerate(img_links):
+                        cols[i].image(link, caption=f"Result {i+1}", use_column_width=True)
+                    st.session_state.messages.append({"role": "assistant", "type": "images", "content": img_links})
+                    del st.session_state["pending_search_query"]
+                    st.rerun()
+                else:
+                    st.error(error)
+                    
