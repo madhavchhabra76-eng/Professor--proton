@@ -4,7 +4,7 @@ import requests
 import time
 
 # -----------------------------------------------------------
-# PROFESSOR PROTON - PURE PUNJABI TEXTBOOK EDITION 🦁
+# PROFESSOR PROTON - SIMPLE SPOKEN PUNJABI EDITION 🗣️
 # -----------------------------------------------------------
 
 st.set_page_config(page_title="Professor Proton", page_icon="⚛️", layout="centered")
@@ -92,7 +92,6 @@ with st.expander("⚙️ Settings", expanded=False):
     language = st.radio("Language", ["English", "Punjabi"])
     if st.button("🧹 Clear Chat"):
         st.session_state.messages = []
-        st.session_state.pop("pending_search_query", None)
         st.rerun()
 
 # --- 6. HISTORY ---
@@ -117,30 +116,29 @@ if user_input:
     with st.chat_message("assistant"):
         answer_ph = st.empty()
         
-        with st.spinner("Writing Textbook Answer..."):
+        with st.spinner("Writing..."):
             try:
                 # ----------------------------------------------------
-                # 🚨 PURE PUNJABI TEXTBOOK PROMPT
+                # 🚨 SIMPLE COMMON PUNJABI PROMPT
                 # ----------------------------------------------------
                 
-                lang_instruction = "English. Write a direct, academic textbook answer suitable for exam notes."
+                lang_instruction = "English. Write a brief, precise answer suitable for exam notes."
                 
                 if language == "Punjabi":
                     lang_instruction = (
-                        "Punjabi (GURMUKHI SCRIPT ONLY). "
-                        "CRITICAL LANGUAGE RULES: "
-                        "1. NO HINDI WORDS. Use pure Punjabi (e.g., Use 'ਕਿਰਿਆ' not 'ਕ੍ਰਿਆ', Use 'ਪ੍ਰਕਾਸ਼' not 'ਰੋਸ਼ਨੀ'). "
-                        "2. NO GREETINGS. Start directly with the definition. "
-                        "3. FORMAT: "
-                        "   - Definition: [Write definition here] "
-                        "   - Explanation: [Write explanation here] "
-                        "   - Key Points: [Use Bullet points] "
-                        "4. TERMINOLOGY: For every scientific term, you MUST write the English word in brackets. Example: 'ਪ੍ਰਕਾਸ਼ ਸੰਸ਼ਲੇਸ਼ਣ (Photosynthesis)'."
-                        "5. STYLE: Academic and precise, like a PSEB school textbook."
+                        "Punjabi (GURMUKHI SCRIPT). "
+                        "RULES FOR SIMPLE LANGUAGE: "
+                        "1. Use 'Aam Bol-chal' (Daily Spoken) Punjabi. Avoid hard/poetic words. "
+                        "2. PRECISE & BRIEF: Write short, direct sentences. No extra words. "
+                        "3. SCIENCE TERMS: Write the English word using Punjabi letters. "
+                        "   - Example: Instead of 'ਊਰਜਾ' write 'ਐਨਰਜੀ' (Energy). "
+                        "   - Example: Instead of 'ਪ੍ਰਤੀਕਿਰਿਆ' write 'ਰਿਐਕਸ਼ਨ' (Reaction). "
+                        "4. FORMAT: Definition -> Bullet Points. "
+                        "5. NO GREETINGS. Start directly with the answer."
                     )
 
                 prompt = (
-                    f"Act as a strict Science Textbook Author for Class {selected_class}. "
+                    f"Act as a Science Tutor for Class {selected_class}. "
                     f"Question: '{user_input}'. "
                     f"Instructions: {lang_instruction} "
                 )
