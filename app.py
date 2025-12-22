@@ -5,24 +5,23 @@ import time
 import requests
 
 # -----------------------------------------------------------
-# PROFESSOR PROTON - DETAILED GURMUKHI EDITION 👳🏽‍♂️
+# PROFESSOR PROTON - DEEP SCIENCE PUNJABI EDITION 🧬
 # -----------------------------------------------------------
 
 st.set_page_config(page_title="Professor Proton", page_icon="⚛️", layout="centered")
 
-# --- 1. CSS (Purple Theme like Client Wants) ---
+# --- 1. CSS ---
 st.markdown("""
 <style>
     .stApp { background-color: #ffffff; }
     p, h1, h2, h3, li, div, span, b, strong { color: #000000 !important; font-family: 'Helvetica Neue', sans-serif; }
     
-    /* TEACHER BOX - PURPLE STYLE */
     .tutor-box { 
-        background-color: #f3f0ff; /* Light purple tint */
+        background-color: #f3f0ff; 
         padding: 25px; 
         border-radius: 15px; 
         margin-bottom: 20px; 
-        border-left: 6px solid #7c3aed; /* Deep Purple */
+        border-left: 6px solid #7c3aed; 
         font-size: 18px; 
         line-height: 1.8; 
         color: #1f2937;
@@ -43,15 +42,12 @@ client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 def get_google_images(search_query):
     if "GOOGLE_API_KEY" not in st.secrets or "GOOGLE_CX" not in st.secrets:
         return [], "Google keys missing."
-        
+    
     api_key = st.secrets["GOOGLE_API_KEY"]
     cx = st.secrets["GOOGLE_CX"]
     url = "https://www.googleapis.com/customsearch/v1"
     
-    params = {
-        'q': search_query, 'key': api_key, 'cx': cx,
-        'searchType': 'image', 'num': 3, 'safe': 'active', 'imgType': 'clipart'
-    }
+    params = { 'q': search_query, 'key': api_key, 'cx': cx, 'searchType': 'image', 'num': 3, 'safe': 'active', 'imgType': 'clipart' }
     
     try:
         response = requests.get(url, params=params)
@@ -110,42 +106,43 @@ if user_input:
     with st.chat_message("assistant"):
         answer_ph = st.empty()
         
-        with st.spinner("Writing..."):
+        with st.spinner("Writing detailed explanation..."):
             try:
                 # ----------------------------------------------------
-                # 🚨 THE "GURMUKHI DETAIL" PROMPT
+                # 🚨 THE "DEEP DETAIL" PROMPT
                 # ----------------------------------------------------
                 
                 lang_instruction = """
-                English. Write a detailed paragraph explaining the concept simply.
+                English. Write a comprehensive, enthusiastic explanation (approx 150 words). 
+                Include chemical reasons (reaction with air/moisture) and safety risks (fire).
                 """
                 
                 if language == "Punjabi":
                     lang_instruction = """
-                    Punjabi (GURMUKHI SCRIPT ONLY). 
-                    IMPORTANT: Write in proper Punjabi characters (e.g. ਸਤ ਸ੍ਰੀ ਅਕਾਲ). 
-                    Do NOT use Roman/English characters.
+                    Punjabi (GURMUKHI SCRIPT ONLY).
                     
-                    STRUCTURE:
-                    1. Greeting: "ਸਤ ਸ੍ਰੀ ਅਕਾਲ! ਮੈਨੂੰ ਤੁਹਾਡੀ ਮਦਦ ਕਰਕੇ ਖੁਸ਼ੀ ਹੋ ਰਹੀ ਹੈ।"
-                    2. Explanation: Write a detailed 5-8 sentence explanation. Explain the 'Why' and 'How' deeply. 
-                    3. Tone: Friendly, like a teacher. Use simple words.
-                    4. Formatting: Do not use stars (**).
+                    CRITICAL INSTRUCTION: You must provide a LONG, DETAILED explanation (at least 10-12 sentences).
+                    1. START: "ਸਤ ਸ੍ਰੀ ਅਕਾਲ! ਇਹ ਇੱਕ ਬਹੁਤ ਹੀ ਦਿਲਚਸਪ ਸਵਾਲ ਹੈ।"
+                    2. EXPLAIN CHEMISTRY: You MUST explain that Sodium reacts with Moisture (ਨਮੀ) and Oxygen to produce Hydrogen gas.
+                    3. EXPLAIN DANGER: Mention that this reaction produces heat (ਗਰਮੀ) which can cause Fire (ਅੱਗ) or Blast (ਧਮਾਕਾ).
+                    4. EXPLAIN SOLUTION: Explain exactly how Kerosene cuts off the air supply.
+                    5. TONE: Friendly but scientifically detailed. Do NOT summarize. Go deep.
                     """
 
                 prompt = f"""
-                Act as a Friendly Science Tutor for Class {selected_class}. 
+                Act as an Expert Science Teacher for Class {selected_class}. 
                 Topic: "{user_input}"
                 Language Instructions: {lang_instruction}
 
                 TASK:
-                Write a detailed, warm, helpful answer. It should be long enough to fully explain the concept to a student.
+                Write a detailed, high-quality textbook answer. 
+                Do not be brief. Be thorough.
                 
                 JSON KEYS: "answer", "google_search_query"
 
-                JSON Example (Punjabi):
+                JSON Example:
                 {{
-                    "answer": "ਸਤ ਸ੍ਰੀ ਅਕਾਲ! ਇਸਦਾ ਮੁੱਖ ਕਾਰਨ ਇਹ ਹੈ ਕਿ...", 
+                    "answer": "(Full detailed paragraph here...)", 
                     "google_search_query": "english query for diagram"
                 }}
                 """
@@ -186,3 +183,4 @@ if "pending_search_query" in st.session_state:
                     st.rerun()
                 else:
                     st.error(error)
+                    
