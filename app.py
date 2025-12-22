@@ -5,7 +5,7 @@ import time
 import requests
 
 # -----------------------------------------------------------
-# PROFESSOR PROTON - GPT-4o EDITION (GitHub Models) 🧠
+# PROFESSOR PROTON - GPT-4o (SMART & DIRECT) 🧠
 # -----------------------------------------------------------
 
 st.set_page_config(page_title="Professor Proton", page_icon="⚛️", layout="centered")
@@ -38,7 +38,7 @@ if "GITHUB_TOKEN" not in st.secrets:
     st.error("⚠️ GITHUB_TOKEN is missing. Please add it to Secrets.")
     st.stop()
 
-# 🚨 CONNECTING TO GITHUB MODELS (Using OpenAI Client)
+# 🚨 CONNECTING TO GITHUB MODELS (GPT-4o)
 client = OpenAI(
     base_url="https://models.inference.ai.azure.com",
     api_key=st.secrets["GITHUB_TOKEN"],
@@ -122,10 +122,10 @@ if user_input:
     with st.chat_message("assistant"):
         answer_ph = st.empty()
         
-        with st.spinner("Asking GPT-4o..."):
+        with st.spinner("Thinking..."):
             try:
                 # ----------------------------------------------------
-                # 🚨 GPT-4o PROMPT (Excellent at Punjabi)
+                # 🚨 GPT-4o PROMPT (Natural but Direct)
                 # ----------------------------------------------------
                 
                 lang_instruction = "English. Write a detailed, friendly explanation."
@@ -133,15 +133,16 @@ if user_input:
                 if language == "Punjabi":
                     lang_instruction = (
                         "Punjabi (GURMUKHI SCRIPT). "
-                        "1. Write a LONG, STORY-LIKE explanation (at least 150 words). "
-                        "2. Use simple, spoken Punjabi (not formal bookish Punjabi). "
-                        "3. Write English science terms in Punjabi script (e.g. 'ਆਕਸੀਜਨ' for Oxygen). "
-                        "4. Start with 'ਸਤ ਸ੍ਰੀ ਅਕਾਲ!'. "
-                        "5. Break it into paragraphs for easy reading."
+                        "RULES: "
+                        "1. Start with 'ਸਤ ਸ੍ਰੀ ਅਕਾਲ!'. "
+                        "2. IMPORTANT: Answer the specific question immediately in the first paragraph. Do not ramble. "
+                        "3. If listing parts (like flower parts), USE BULLET POINTS. "
+                        "4. Use English terms in brackets for clarity: e.g. 'ਪੰਖੜੀਆਂ (Petals)'. "
+                        "5. Keep the tone friendly but educational."
                     )
 
                 prompt = (
-                    f"Act as High and middle school science teacher that answers anything asked related to science. Be a kind and cooperative teacher that want students to learn {selected_class}. "
+                    f"You are an expert Science Tutor for Class {selected_class}. "
                     f"Question: '{user_input}'. "
                     f"Language: {lang_instruction} "
                     "Return valid JSON: { \"answer\": \"...\", \"google_search_query\": \"english query\" }"
@@ -149,7 +150,7 @@ if user_input:
                 
                 completion = client.chat.completions.create(
                     messages=[{"role": "user", "content": prompt}],
-                    model="gpt-4o",  # 🚨 USING GPT-4o
+                    model="gpt-4o",
                     response_format={"type": "json_object"}
                 )
                 data = json.loads(completion.choices[0].message.content)
