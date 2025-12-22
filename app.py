@@ -4,7 +4,7 @@ import requests
 import time
 
 # -----------------------------------------------------------
-# PROFESSOR PROTON - SIMPLE SPOKEN PUNJABI EDITION 🗣️
+# PROFESSOR PROTON - PSEB STANDARD EDITION (Correct Spelling) ✅
 # -----------------------------------------------------------
 
 st.set_page_config(page_title="Professor Proton", page_icon="⚛️", layout="centered")
@@ -119,7 +119,7 @@ if user_input:
         with st.spinner("Writing..."):
             try:
                 # ----------------------------------------------------
-                # 🚨 SIMPLE COMMON PUNJABI PROMPT
+                # 🚨 PSEB STANDARD SPELLING PROMPT
                 # ----------------------------------------------------
                 
                 lang_instruction = "English. Write a brief, precise answer suitable for exam notes."
@@ -127,18 +127,18 @@ if user_input:
                 if language == "Punjabi":
                     lang_instruction = (
                         "Punjabi (GURMUKHI SCRIPT). "
-                        "RULES FOR SIMPLE LANGUAGE: "
-                        "1. Use 'Aam Bol-chal' (Daily Spoken) Punjabi. Avoid hard/poetic words. "
-                        "2. PRECISE & BRIEF: Write short, direct sentences. No extra words. "
-                        "3. SCIENCE TERMS: Write the English word using Punjabi letters. "
-                        "   - Example: Instead of 'ਊਰਜਾ' write 'ਐਨਰਜੀ' (Energy). "
-                        "   - Example: Instead of 'ਪ੍ਰਤੀਕਿਰਿਆ' write 'ਰਿਐਕਸ਼ਨ' (Reaction). "
-                        "4. FORMAT: Definition -> Bullet Points. "
-                        "5. NO GREETINGS. Start directly with the answer."
+                        "STRICT SPELLING & VOCABULARY RULES: "
+                        "1. USE PSEB TEXTBOOK STANDARD SPELLING only. Do not invent spellings. "
+                        "2. NO HINDI WORDS. Use pure Punjabi grammar. "
+                        "3. SCIENTIFIC TERMS: Do NOT translate complex science words into weird Punjabi. "
+                        "   Instead, write the English word in Gurmukhi script. "
+                        "   - Correct: 'ਫੋਟੋਸਿੰਥੇਸਿਸ (Photosynthesis)' "
+                        "   - Incorrect: 'ਪ੍ਰਕਾਸ਼ ਰਸੋਈ' "
+                        "4. FORMAT: Brief and Precise. No greetings. Direct answer + Bullet Points."
                     )
 
                 prompt = (
-                    f"Act as a Science Tutor for Class {selected_class}. "
+                    f"Act as a Science Teacher for Class {selected_class}. "
                     f"Question: '{user_input}'. "
                     f"Instructions: {lang_instruction} "
                 )
