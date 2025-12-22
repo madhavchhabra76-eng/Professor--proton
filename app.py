@@ -5,7 +5,7 @@ import time
 import requests
 
 # -----------------------------------------------------------
-# PROFESSOR PROTON - FRIENDLY TUTOR EDITION 👨‍🏫
+# PROFESSOR PROTON - PUNJABI MASTERJI EDITION 👨‍🏫
 # -----------------------------------------------------------
 
 st.set_page_config(page_title="Professor Proton", page_icon="⚛️", layout="centered")
@@ -16,20 +16,21 @@ st.markdown("""
     .stApp { background-color: #ffffff; }
     p, h1, h2, h3, li, div, span, b, strong { color: #000000 !important; font-family: 'Helvetica Neue', sans-serif; }
     
-    /* TUTOR ANSWER BOX */
+    /* TEACHER BOX */
     .tutor-box { 
-        background-color: #f0f7ff; 
+        background-color: #f3f4f6; 
         padding: 25px; 
-        border-radius: 12px; 
+        border-radius: 15px; 
         margin-bottom: 20px; 
-        border: 1px solid #dbeafe;
-        font-size: 19px; /* Bigger text for easy reading */
+        border-left: 6px solid #8b5cf6; /* Purple line like the client wants */
+        font-size: 19px; 
         line-height: 1.8; 
-        color: #1e293b;
+        color: #1f2937;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
     }
     
     .stButton button { border-radius: 20px; width: 100%; font-weight: bold; }
-    button[kind="primary"] { background-color: #4F46E5 !important; border: none; color: white !important; }
+    button[kind="primary"] { background-color: #8b5cf6 !important; border: none; color: white !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -98,7 +99,7 @@ for msg in st.session_state.messages:
         else:
              st.markdown(msg["content"], unsafe_allow_html=True)
 
-# --- 7. MAIN LOGIC (TUTOR MODE) ---
+# --- 7. MAIN LOGIC (TEACHER MODE) ---
 user_input = st.chat_input("Ask a question (e.g. Why is sodium kept in kerosene?)...")
 
 if user_input:
@@ -112,37 +113,40 @@ if user_input:
         with st.spinner("Writing..."):
             try:
                 # ----------------------------------------------------
-                # 🚨 THE "FRIENDLY TUTOR" PROMPT
+                # 🚨 THE "PUNJABI MASTERJI" PROMPT
                 # ----------------------------------------------------
                 
-                lang_instruction = "English"
+                lang_instruction = """
+                English. Write clear, simple student-friendly explanations.
+                """
+                
                 if language == "Punjabi":
                     lang_instruction = """
-                    Punjabi (Gurmukhi Script). 
-                    CRITICAL: Write like a friendly teacher explaining to a student.
-                    1. Use simple, conversational Punjabi words (avoid complex formal translation).
-                    2. Explain the 'Why' clearly.
-                    3. Highlight key terms in **bold** (e.g. **Sodium**, **Kerosene**).
+                    Punjabi (Gurmukhi).
+                    ROLE: You are a friendly, polite Punjabi school teacher.
+                    
+                    RULES:
+                    1. START with a warm greeting like "Sat Sri Akal ji!" or "Hanji,".
+                    2. TONE: Conversational and simple. Explain like you are telling a story to a child.
+                    3. FORMAT: Do NOT use asterisks (**). Keep the text clean. 
+                    4. CONTENT: Use simple words. For example, mention 'Regmar' (sandpaper) for cleaning magnesium.
+                    5. ENDING: End with a polite closing like "Umeed hai tuhanu samajh aa gaya hovega!"
                     """
 
                 prompt = f"""
-                You are a Friendly Science Tutor for Class {selected_class}. 
+                Act as a Friendly Science Teacher for Class {selected_class}. 
                 Topic: "{user_input}"
-                Language: {lang_instruction}
+                Language Instructions: {lang_instruction}
 
-                INSTRUCTIONS:
-                1. **Goal**: Write a clear, simple explanation that a student can copy for homework.
-                2. **Style**: 
-                   - Be direct but helpful. 
-                   - Use bolding for important scientific terms.
-                   - If asking "Why", start with the reason.
-                3. **Format**: ONE single paragraph. No bullet points.
-                4. **Keys**: JSON keys must be "answer" and "google_search_query".
+                TASK:
+                Write a single, warm, easy-to-understand paragraph answering the student's question.
+                
+                JSON KEYS: "answer", "google_search_query"
 
                 JSON Structure:
                 {{
-                    "answer": "Sodium is a very reactive metal... (Write full explanation here)", 
-                    "google_search_query": "concise english query for google images"
+                    "answer": "Sat Sri Akal ji! Magnesium nu saaf karn da kaaran eh hai ki...", 
+                    "google_search_query": "english search query for diagrams"
                 }}
                 """
                 
