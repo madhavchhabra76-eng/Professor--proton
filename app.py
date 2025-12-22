@@ -5,7 +5,7 @@ import time
 import requests
 
 # -----------------------------------------------------------
-# PROFESSOR PROTON - STORYTELLER EDITION (Kahani Mode) 📖
+# PROFESSOR PROTON - PURE GURMUKHI EDITION ☬
 # -----------------------------------------------------------
 
 st.set_page_config(page_title="Professor Proton", page_icon="⚛️", layout="centered")
@@ -118,10 +118,10 @@ if user_input:
     with st.chat_message("assistant"):
         answer_ph = st.empty()
         
-        with st.spinner("Thinking..."):
+        with st.spinner("Writing..."):
             try:
                 # ----------------------------------------------------
-                # 🚨 THE "KAHANI" PROMPT (Forces Length & Detail)
+                # 🚨 THE "PURE GURMUKHI" PROMPT
                 # ----------------------------------------------------
                 
                 lang_instruction = "English. Write a long, enthusiastic explanation (approx 150 words). Start with 'Hello there, young scientist!'."
@@ -129,26 +129,25 @@ if user_input:
                 if language == "Punjabi":
                     lang_instruction = (
                         "Punjabi (GURMUKHI SCRIPT ONLY). "
-                        "CRITICAL RULES FOR LENGTH & DETAIL: "
-                        "1. MINIMUM LENGTH: Write at least 12-15 sentences. Do NOT summarize. "
-                        "2. TONE: Chatty and friendly. Use filler phrases like 'Asal vich...' (Actually), 'Dekho bacheyo...' (Look children), 'Dilchasp gal eh hai...' (The interesting thing is). "
-                        "3. HINGLISH TERMS: Write English science terms in Punjabi script (e.g. 'Oxygen' -> 'ਆਕਸੀਜਨ'). "
-                        "4. STRUCTURE: "
-                        "   - Para 1: Introduction. 'Sat Sri Akal!'. Explain that Sodium is very 'Reactive' (React karda hai). "
-                        "   - Para 2: The Danger. Explain 'Moisture' (Hawa di nami) and 'Heat' (Garmi/Agg). Tell a story about how it catches fire. "
-                        "   - Para 3: The Solution. Explain how Kerosene acts like a 'Blanket' or 'Barrier' layer. "
+                        "STRICT RULES: "
+                        "1. Write ONLY in Gurmukhi Script (ਪੰਜਾਬੀ). Do NOT use English letters for normal words. "
+                        "   - BAD: 'Asal vich' "
+                        "   - GOOD: 'ਅਸਲ ਵਿੱਚ' "
+                        "2. For scientific terms, write the Punjabi word followed by English in brackets. "
+                        "   - Example: 'ਸੋਡੀਅਮ (Sodium)', 'ਆਕਸੀਜਨ (Oxygen)', 'ਰਿਐਕਸ਼ਨ (Reaction)'. "
+                        "3. LENGTH: Write a very detailed 200-word explanation. "
+                        "4. STRUCTURE: Start with 'ਸਤ ਸ੍ਰੀ ਅਕਾਲ!'. Explain the Science, the Danger, and the Solution in detail."
                     )
 
                 prompt = (
                     f"Topic: '{user_input}' for Class {selected_class}. "
                     f"{lang_instruction} "
                     "Provide the result in valid JSON format only. "
-                    "JSON Example: { \"answer\": \"(Your long 200-word answer here...)\", \"google_search_query\": \"english query\" }"
+                    "JSON Example: { \"answer\": \"...\", \"google_search_query\": \"english query\" }"
                 )
                 
                 completion = client.chat.completions.create(
                     messages=[{"role": "user", "content": prompt}],
-                    # 🚨 USING STABLE MODEL
                     model="llama-3.3-70b-versatile",
                     response_format={"type": "json_object"}
                 )
