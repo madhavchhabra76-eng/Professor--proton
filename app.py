@@ -5,7 +5,7 @@ import time
 import requests
 
 # -----------------------------------------------------------
-# PROFESSOR PROTON - TABLET PROOF EDITION 📱
+# PROFESSOR PROTON - GOOGLE GEMMA EDITION (Best for Punjabi) 💎
 # -----------------------------------------------------------
 
 st.set_page_config(page_title="Professor Proton", page_icon="⚛️", layout="centered")
@@ -121,22 +121,21 @@ if user_input:
         with st.spinner("Writing detailed explanation..."):
             try:
                 # ----------------------------------------------------
-                # 🚨 PROMPT (SAFER STRING FORMAT)
+                # 🚨 MODEL SWITCH: USING GOOGLE GEMMA 2
                 # ----------------------------------------------------
                 
                 lang_instruction = "English. Write a long, enthusiastic explanation (approx 150 words). Start with 'Hello there, young scientist!'."
                 
                 if language == "Punjabi":
-                    # Using simple strings joined together to prevent syntax errors
                     lang_instruction = (
                         "Punjabi (GURMUKHI SCRIPT ONLY). "
-                        "CRITICAL INSTRUCTION: You must provide a LONG, DETAILED explanation (Same length as English). "
-                        "STRUCTURE: "
-                        "1. Greeting: 'ਸਤ ਸ੍ਰੀ ਅਕਾਲ! ਆਓ ਇਸ ਬਾਰੇ ਵਿਸਥਾਰ ਵਿੱਚ ਜਾਣੀਏ।' "
-                        "2. Part 1 (The Reaction): Explain DETAILED science. Mention how Sodium reacts with Moisture (ਨਮੀ) and Oxygen violently. "
-                        "3. Part 2 (The Danger): Explain that this reaction creates Heat (ਗਰਮੀ) and Hydrogen gas, which can cause a Fire (ਅੱਗ). "
-                        "4. Part 3 (The Solution): Explain deeply how Kerosene creates a barrier layer that cuts off contact with air. "
-                        "Do NOT summarize. Write a full scientific story in simple Punjabi (150-200 words)."
+                        "CRITICAL: Write a VERY LONG, DETAILED explanation (150-200 words). "
+                        "Do not just summarize. Explain the science like a story. "
+                        "1. Start with 'ਸਤ ਸ੍ਰੀ ਅਕਾਲ!'. "
+                        "2. Explain the reaction with Moisture (ਨਮੀ) and Oxygen. "
+                        "3. Explain the heat (ਗਰਮੀ) and fire (ਅੱਗ) risk. "
+                        "4. Explain how Kerosene cuts the air supply. "
+                        "Write naturally."
                     )
 
                 prompt = f"""
@@ -145,8 +144,7 @@ if user_input:
                 Language Instructions: {lang_instruction}
 
                 TASK:
-                Write a detailed, high-quality textbook answer. 
-                Do not be brief. Be thorough.
+                Write a detailed, high-quality textbook answer.
                 
                 JSON KEYS: "answer", "google_search_query"
 
@@ -159,7 +157,8 @@ if user_input:
                 
                 completion = client.chat.completions.create(
                     messages=[{"role": "user", "content": prompt}],
-                    model="llama-3.3-70b-versatile",
+                    # 🚨 WE SWITCHED TO GEMMA 2 HERE:
+                    model="gemma2-9b-it",
                     response_format={"type": "json_object"}
                 )
                 data = json.loads(completion.choices[0].message.content)
@@ -193,4 +192,3 @@ if "pending_search_query" in st.session_state:
                     st.rerun()
                 else:
                     st.error(error)
-                    
