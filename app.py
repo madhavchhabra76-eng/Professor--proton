@@ -5,12 +5,12 @@ import time
 import requests
 
 # -----------------------------------------------------------
-# PROFESSOR PROTON - STABLE LLAMA 3.3 EDITION 🦙
+# PROFESSOR PROTON - STABLE & SMART PUNJABI EDITION 🦁
 # -----------------------------------------------------------
 
 st.set_page_config(page_title="Professor Proton", page_icon="⚛️", layout="centered")
 
-# --- 1. CSS ---
+# --- 1. CSS (Clean & Purple) ---
 st.markdown("""
 <style>
     .stApp { background-color: #ffffff; }
@@ -118,46 +118,40 @@ if user_input:
     with st.chat_message("assistant"):
         answer_ph = st.empty()
         
-        with st.spinner("Thinking..."):
+        with st.spinner("Writing..."):
             try:
                 # ----------------------------------------------------
-                # 🚨 STABLE MODEL: LLAMA 3.3 (With Better Punjabi Prompts)
+                # 🚨 THE "SUPER PROMPT" (Fixes Robotic Punjabi)
                 # ----------------------------------------------------
                 
+                # We use simple string concatenation to avoid syntax errors on tablets
                 lang_instruction = "English. Write a long, enthusiastic explanation (approx 150 words). Start with 'Hello there, young scientist!'."
                 
                 if language == "Punjabi":
-                    # We force Llama to use "Hinglish style" logic but write in Gurmukhi
                     lang_instruction = (
                         "Punjabi (GURMUKHI SCRIPT ONLY). "
-                        "RULES FOR BETTER PUNJABI: "
-                        "1. Do NOT use complex textbook words. Use simple spoken Punjabi. "
-                        "2. For hard science terms (like 'Reaction' or 'Oxygen'), write the English word in Punjabi script (e.g. 'ਰਿਐਕਸ਼ਨ', 'ਆਕਸੀਜਨ'). "
-                        "3. Structure: Start with 'ਸਤ ਸ੍ਰੀ ਅਕਾਲ!'. Explain the concept like a story. "
-                        "4. LENGTH: Must be 150+ words. Detailed explanation of the 'Why' and 'How'. "
+                        "RULES FOR NATURAL PUNJABI: "
+                        "1. Do NOT use complex textbook words. Use simple SPOKEN Punjabi. "
+                        "2. For science words like 'Oxygen', 'Reaction', 'Kerosene', 'Energy', write the English word using Punjabi letters (e.g. 'ਆਕਸੀਜਨ', 'ਰਿਐਕਸ਼ਨ', 'ਐਨਰਜੀ'). "
+                        "3. EXPLANATION: Write a 150-word detailed story. "
+                        "4. START: 'ਸਤ ਸ੍ਰੀ ਅਕਾਲ! ਆਓ ਇਸਨੂੰ ਸਮਝੀਏ।' "
+                        "5. STRUCTURE: Explain the 'Why' (Reaction with air) and the 'Danger' (Fire/Blast) and the 'Solution' (Oil layer)."
                     )
 
-                prompt = f"""
-                Act as an Expert Science Teacher for Class {selected_class}. 
-                Topic: "{user_input}"
-                Language Instructions: {lang_instruction}
-
-                TASK:
-                Write a detailed, high-quality textbook answer.
-                IMPORTANT: Output valid JSON only.
-                
-                JSON KEYS: "answer", "google_search_query"
-
-                JSON Example:
-                {{
-                    "answer": "Your long detailed answer here...", 
-                    "google_search_query": "english query for diagram"
-                }}
-                """
+                # Using a standard string for the prompt
+                prompt = (
+                    f"Act as an Expert Science Teacher for Class {selected_class}. "
+                    f"Topic: '{user_input}' "
+                    f"Language Instructions: {lang_instruction} "
+                    "TASK: Write a detailed, high-quality textbook answer. "
+                    "IMPORTANT: Output valid JSON only. "
+                    "JSON KEYS: 'answer', 'google_search_query' "
+                    "JSON Example: { \"answer\": \"Full explanation...\", \"google_search_query\": \"english query\" }"
+                )
                 
                 completion = client.chat.completions.create(
                     messages=[{"role": "user", "content": prompt}],
-                    # 🚨 BACK TO THE STABLE MODEL
+                    # 🚨 STABLE MODEL
                     model="llama-3.3-70b-versatile",
                     response_format={"type": "json_object"}
                 )
