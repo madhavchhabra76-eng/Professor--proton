@@ -4,12 +4,12 @@ import requests
 import time
 
 # -----------------------------------------------------------
-# PROFESSOR PROTON - EXAM NOTEBOOK EDITION 📝
+# PROFESSOR PROTON - PURE PUNJABI TEXTBOOK EDITION 🦁
 # -----------------------------------------------------------
 
 st.set_page_config(page_title="Professor Proton", page_icon="⚛️", layout="centered")
 
-# --- 1. CSS (Clean & Professional) ---
+# --- 1. CSS ---
 st.markdown("""
 <style>
     .stApp { background-color: #ffffff; }
@@ -120,28 +120,27 @@ if user_input:
         with st.spinner("Writing Textbook Answer..."):
             try:
                 # ----------------------------------------------------
-                # 🚨 STRICT TEXTBOOK PROMPT (Direct & Precise)
+                # 🚨 PURE PUNJABI TEXTBOOK PROMPT
                 # ----------------------------------------------------
                 
-                # Standard English instruction
                 lang_instruction = "English. Write a direct, academic textbook answer suitable for exam notes."
                 
                 if language == "Punjabi":
                     lang_instruction = (
-                        "Punjabi (GURMUKHI SCRIPT). "
-                        "STRICT NOTEBOOK RULES: "
-                        "1. NO GREETINGS. Do NOT say 'Sat Sri Akal' or 'Hello'. Start directly with the answer. "
-                        "2. NO FLUFF. Do NOT say 'Let's understand' or 'Look children'. "
+                        "Punjabi (GURMUKHI SCRIPT ONLY). "
+                        "CRITICAL LANGUAGE RULES: "
+                        "1. NO HINDI WORDS. Use pure Punjabi (e.g., Use 'ਕਿਰਿਆ' not 'ਕ੍ਰਿਆ', Use 'ਪ੍ਰਕਾਸ਼' not 'ਰੋਸ਼ਨੀ'). "
+                        "2. NO GREETINGS. Start directly with the definition. "
                         "3. FORMAT: "
-                        "   - Start with a direct definition. "
-                        "   - Give a precise explanation. "
-                        "   - Use bullet points for steps or parts. "
-                        "4. LANGUAGE: Pure Punjabi (Gurmukhi). Use English terms in brackets (e.g., 'ਪ੍ਰਕਾਸ਼ ਸੰਸ਼ਲੇਸ਼ਣ (Photosynthesis)'). "
-                        "5. LENGTH: 150 words. Detailed but concise."
+                        "   - Definition: [Write definition here] "
+                        "   - Explanation: [Write explanation here] "
+                        "   - Key Points: [Use Bullet points] "
+                        "4. TERMINOLOGY: For every scientific term, you MUST write the English word in brackets. Example: 'ਪ੍ਰਕਾਸ਼ ਸੰਸ਼ਲੇਸ਼ਣ (Photosynthesis)'."
+                        "5. STYLE: Academic and precise, like a PSEB school textbook."
                     )
 
                 prompt = (
-                    f"Act as a strict Textbook Author for Class {selected_class}. "
+                    f"Act as a strict Science Textbook Author for Class {selected_class}. "
                     f"Question: '{user_input}'. "
                     f"Instructions: {lang_instruction} "
                 )
@@ -158,7 +157,7 @@ if user_input:
                 st.session_state.messages.append({"role": "assistant", "content": final_html})
                 
                 # Search Query
-                st.session_state["pending_search_query"] = user_input + " diagram class " + str(selected_class)
+                st.session_state["pending_search_query"] = user_input + " diagram"
                 st.rerun()
 
             except Exception as e:
