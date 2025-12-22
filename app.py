@@ -5,7 +5,7 @@ import time
 import requests
 
 # -----------------------------------------------------------
-# PROFESSOR PROTON - DEEPSEEK EDITION (Smartest & Robust) 🧠
+# PROFESSOR PROTON - MIXTRAL EDITION (Stable & Creative) 🌪️
 # -----------------------------------------------------------
 
 st.set_page_config(page_title="Professor Proton", page_icon="⚛️", layout="centered")
@@ -118,16 +118,16 @@ if user_input:
     with st.chat_message("assistant"):
         answer_ph = st.empty()
         
-        with st.spinner("Thinking deeply..."):
+        with st.spinner("Thinking..."):
             try:
                 # ----------------------------------------------------
-                # 🚨 MODEL SWITCH: DEEPSEEK R1 (DISTILL LLAMA)
+                # 🚨 MODEL SWITCH: MIXTRAL 8x7B (Stable)
                 # ----------------------------------------------------
                 
                 lang_instruction = "English. Write a long, enthusiastic explanation (approx 150 words). Start with 'Hello there, young scientist!'."
                 
                 if language == "Punjabi":
-                    # Using "Tablet Proof" strings to prevent syntax errors
+                    # Using "Tablet Proof" strings
                     lang_instruction = (
                         "Punjabi (GURMUKHI SCRIPT ONLY). "
                         "CRITICAL: Write a VERY LONG, DETAILED explanation (150-200 words). "
@@ -136,7 +136,7 @@ if user_input:
                         "2. Explain the reaction with Moisture (ਨਮੀ) and Oxygen. "
                         "3. Explain the heat (ਗਰਮੀ) and fire (ਅੱਗ) risk. "
                         "4. Explain how Kerosene cuts the air supply. "
-                        "Write naturally and politely."
+                        "Write naturally."
                     )
 
                 prompt = f"""
@@ -146,7 +146,7 @@ if user_input:
 
                 TASK:
                 Write a detailed, high-quality textbook answer.
-                IMPORTANT: Output valid JSON only. Do NOT output thinking tokens.
+                IMPORTANT: Output valid JSON only.
                 
                 JSON KEYS: "answer", "google_search_query"
 
@@ -159,8 +159,8 @@ if user_input:
                 
                 completion = client.chat.completions.create(
                     messages=[{"role": "user", "content": prompt}],
-                    # 🚨 NEW MODEL ID: DeepSeek R1 (Distill Llama 70B)
-                    model="deepseek-r1-distill-llama-70b",
+                    # 🚨 NEW MODEL ID: Mixtral 8x7B (Reliable)
+                    model="mixtral-8x7b-32768",
                     response_format={"type": "json_object"}
                 )
                 data = json.loads(completion.choices[0].message.content)
