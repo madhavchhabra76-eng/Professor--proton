@@ -5,7 +5,7 @@ import time
 import requests
 
 # -----------------------------------------------------------
-# PROFESSOR PROTON - GPT-4o (SMART & DIRECT) 🧠
+# PROFESSOR PROTON - PERFECT BALANCE EDITION ⚖️
 # -----------------------------------------------------------
 
 st.set_page_config(page_title="Professor Proton", page_icon="⚛️", layout="centered")
@@ -125,7 +125,7 @@ if user_input:
         with st.spinner("Thinking..."):
             try:
                 # ----------------------------------------------------
-                # 🚨 GPT-4o PROMPT (Natural but Direct)
+                # 🚨 GPT-4o PROMPT (Detailed but Structured)
                 # ----------------------------------------------------
                 
                 lang_instruction = "English. Write a detailed, friendly explanation."
@@ -133,12 +133,14 @@ if user_input:
                 if language == "Punjabi":
                     lang_instruction = (
                         "Punjabi (GURMUKHI SCRIPT). "
-                        "RULES: "
-                        "1. Start with 'ਸਤ ਸ੍ਰੀ ਅਕਾਲ!'. "
-                        "2. IMPORTANT: Answer the specific question immediately in the first paragraph. Do not ramble. "
-                        "3. If listing parts (like flower parts), USE BULLET POINTS. "
-                        "4. Use English terms in brackets for clarity: e.g. 'ਪੰਖੜੀਆਂ (Petals)'. "
-                        "5. Keep the tone friendly but educational."
+                        "RULES FOR 'PERFECT EXPLANATION': "
+                        "1. START: 'ਸਤ ਸ੍ਰੀ ਅਕਾਲ!'. "
+                        "2. LENGTH: Write at least 150 words. Do not be brief. "
+                        "3. STRUCTURE: "
+                        "   - Paragraph 1: Detailed Definition/Story (Explain 'What' and 'Why'). "
+                        "   - Paragraph 2: If asking for parts/types, use BULLET POINTS. "
+                        "   - Conclusion: A friendly closing sentence. "
+                        "4. VOCAB: Use simple spoken Punjabi. Use English terms in brackets."
                     )
 
                 prompt = (
