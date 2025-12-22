@@ -1,16 +1,15 @@
 import streamlit as st
 from openai import OpenAI
-import json
-import time
 import requests
+import time
 
 # -----------------------------------------------------------
-# PROFESSOR PROTON - PERFECT BALANCE EDITION ⚖️
+# PROFESSOR PROTON - EXAM NOTEBOOK EDITION 📝
 # -----------------------------------------------------------
 
 st.set_page_config(page_title="Professor Proton", page_icon="⚛️", layout="centered")
 
-# --- 1. CSS ---
+# --- 1. CSS (Clean & Professional) ---
 st.markdown("""
 <style>
     .stApp { background-color: #ffffff; }
@@ -35,10 +34,9 @@ st.markdown("""
 
 # --- 2. KEYS CHECK ---
 if "GITHUB_TOKEN" not in st.secrets:
-    st.error("⚠️ GITHUB_TOKEN is missing. Please add it to Secrets.")
+    st.error("⚠️ GITHUB_TOKEN is missing.")
     st.stop()
 
-# 🚨 CONNECTING TO GITHUB MODELS (GPT-4o)
 client = OpenAI(
     base_url="https://models.inference.ai.azure.com",
     api_key=st.secrets["GITHUB_TOKEN"],
@@ -67,14 +65,12 @@ def get_google_images(search_query):
         response = requests.get(url, params=params)
         results = response.json()
         image_links = []
-        
         if 'items' in results:
             for item in results['items']:
                 image_links.append(item['link'])
             return image_links, None
         else:
             return [], "No images found."
-            
     except Exception as e:
         return [], f"Error: {str(e)}"
 
@@ -115,54 +111,54 @@ for msg in st.session_state.messages:
 user_input = st.chat_input("Ask a question...")
 
 if user_input:
-    st.session_state.pop("pending_search_query", None)
     st.session_state.messages.append({"role": "user", "content": user_input})
     with st.chat_message("user"): st.write(user_input)
 
     with st.chat_message("assistant"):
         answer_ph = st.empty()
         
-        with st.spinner("Thinking..."):
+        with st.spinner("Writing Textbook Answer..."):
             try:
                 # ----------------------------------------------------
-                # 🚨 GPT-4o PROMPT (Detailed but Structured)
+                # 🚨 STRICT TEXTBOOK PROMPT (Direct & Precise)
                 # ----------------------------------------------------
                 
-                lang_instruction = "English. Write a detailed, friendly explanation."
+                # Standard English instruction
+                lang_instruction = "English. Write a direct, academic textbook answer suitable for exam notes."
                 
                 if language == "Punjabi":
                     lang_instruction = (
                         "Punjabi (GURMUKHI SCRIPT). "
-                        "RULES FOR 'PERFECT EXPLANATION': "
-                        "1. START: 'ਸਤ ਸ੍ਰੀ ਅਕਾਲ!'. "
-                        "2. LENGTH: Write at least 150 words. Do not be brief. "
-                        "3. STRUCTURE: "
-                        "   - Paragraph 1: Detailed Definition/Story (Explain 'What' and 'Why'). "
-                        "   - Paragraph 2: If asking for parts/types, use BULLET POINTS. "
-                        "   - Conclusion: A friendly closing sentence. "
-                        "4. VOCAB: Use simple spoken Punjabi. Use English terms in brackets."
+                        "STRICT NOTEBOOK RULES: "
+                        "1. NO GREETINGS. Do NOT say 'Sat Sri Akal' or 'Hello'. Start directly with the answer. "
+                        "2. NO FLUFF. Do NOT say 'Let's understand' or 'Look children'. "
+                        "3. FORMAT: "
+                        "   - Start with a direct definition. "
+                        "   - Give a precise explanation. "
+                        "   - Use bullet points for steps or parts. "
+                        "4. LANGUAGE: Pure Punjabi (Gurmukhi). Use English terms in brackets (e.g., 'ਪ੍ਰਕਾਸ਼ ਸੰਸ਼ਲੇਸ਼ਣ (Photosynthesis)'). "
+                        "5. LENGTH: 150 words. Detailed but concise."
                     )
 
                 prompt = (
-                    f"You are an expert Science Tutor for Class {selected_class}. "
+                    f"Act as a strict Textbook Author for Class {selected_class}. "
                     f"Question: '{user_input}'. "
-                    f"Language: {lang_instruction} "
-                    "Return valid JSON: { \"answer\": \"...\", \"google_search_query\": \"english query\" }"
+                    f"Instructions: {lang_instruction} "
                 )
                 
+                # Direct Stream
                 completion = client.chat.completions.create(
                     messages=[{"role": "user", "content": prompt}],
                     model="gpt-4o",
-                    response_format={"type": "json_object"}
                 )
-                data = json.loads(completion.choices[0].message.content)
                 
-                st.session_state["pending_search_query"] = data.get("google_search_query", user_input + " diagram")
-
-                # Stream the Answer
-                final_html = stream_text(answer_ph, data['answer'])
+                answer_text = completion.choices[0].message.content
+                final_html = stream_text(answer_ph, answer_text)
                 
                 st.session_state.messages.append({"role": "assistant", "content": final_html})
+                
+                # Search Query
+                st.session_state["pending_search_query"] = user_input + " diagram class " + str(selected_class)
                 st.rerun()
 
             except Exception as e:
@@ -173,7 +169,7 @@ if "pending_search_query" in st.session_state:
     st.write("") 
     if "GOOGLE_API_KEY" in st.secrets:
         query = st.session_state["pending_search_query"]
-        if st.button(f"🔎 Find Diagrams for: '{query}'", type="primary"):
+        if st.button(f"🔎 Find Diagrams for: '{user_input}'", type="primary"):
             with st.spinner("Searching Google..."):
                 img_links, error = get_google_images(query)
                 
