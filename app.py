@@ -4,7 +4,7 @@ import requests
 import time
 
 # -----------------------------------------------------------
-# PROFESSOR PROTON - PSEB STANDARD EDITION (Correct Spelling) ✅
+# PROFESSOR PROTON - MINI MODEL EDITION (Fast & Free) ⚡
 # -----------------------------------------------------------
 
 st.set_page_config(page_title="Professor Proton", page_icon="⚛️", layout="centered")
@@ -116,37 +116,35 @@ if user_input:
     with st.chat_message("assistant"):
         answer_ph = st.empty()
         
-        with st.spinner("Writing..."):
+        with st.spinner("Professor Proton is thinking..."):
             try:
                 # ----------------------------------------------------
-                # 🚨 PSEB STANDARD SPELLING PROMPT
+                # 🚨 IMPROVED PROMPT (Using Mini Model)
                 # ----------------------------------------------------
                 
-                lang_instruction = "English. Write a brief, precise answer suitable for exam notes."
-                
                 if language == "Punjabi":
-                    lang_instruction = (
-                        "Punjabi (GURMUKHI SCRIPT). "
-                        "STRICT SPELLING & VOCABULARY RULES: "
-                        "1. USE PSEB TEXTBOOK STANDARD SPELLING only. Do not invent spellings. "
-                        "2. NO HINDI WORDS. Use pure Punjabi grammar. "
-                        "3. SCIENTIFIC TERMS: Do NOT translate complex science words into weird Punjabi. "
-                        "   Instead, write the English word in Gurmukhi script. "
-                        "   - Correct: 'ਫੋਟੋਸਿੰਥੇਸਿਸ (Photosynthesis)' "
-                        "   - Incorrect: 'ਪ੍ਰਕਾਸ਼ ਰਸੋਈ' "
-                        "4. FORMAT: Brief and Precise. No greetings. Direct answer + Bullet Points."
+                    system_message = (
+                        f"You are 'Professor Proton', a Science teacher for Class {selected_class}."
+                        "\n\nSTRICT RULES:\n"
+                        "1. Use simple, daily spoken Punjabi (Gurmukhi).\n"
+                        "2. DO NOT translate technical terms. Write them in Gurmukhi. "
+                        "   (e.g., 'Force' -> 'ਫੋਰਸ', 'Gravity' -> 'ਗ੍ਰੈਵਿਟੀ', 'Reaction' -> 'ਰਿਐਕਸ਼ਨ').\n"
+                        "3. NO HINDI WORDS. Use 'Swaal' not 'Prashan'.\n"
+                        "4. Keep it brief and point-wise for exam prep."
                     )
+                    user_prompt = f"Explain this topic simply: {user_input}"
+                else:
+                    system_message = f"You are a professional Science Tutor for Class {selected_class}."
+                    user_prompt = f"Question: '{user_input}'. Write a brief, precise answer for exam notes."
 
-                prompt = (
-                    f"Act as a Science Teacher for Class {selected_class}. "
-                    f"Question: '{user_input}'. "
-                    f"Instructions: {lang_instruction} "
-                )
-                
-                # Direct Stream
+                # 🚨 SWITCHED TO MINI MODEL (To bypass limit)
                 completion = client.chat.completions.create(
-                    messages=[{"role": "user", "content": prompt}],
-                    model="gpt-4o",
+                    model="gpt-4o-mini",
+                    messages=[
+                        {"role": "system", "content": system_message},
+                        {"role": "user", "content": user_prompt}
+                    ],
+                    temperature=0.7 
                 )
                 
                 answer_text = completion.choices[0].message.content
@@ -154,8 +152,8 @@ if user_input:
                 
                 st.session_state.messages.append({"role": "assistant", "content": final_html})
                 
-                # Search Query
-                st.session_state["pending_search_query"] = user_input + " diagram"
+                # Search Query Generation
+                st.session_state["pending_search_query"] = user_input + " scientific diagram"
                 st.rerun()
 
             except Exception as e:
