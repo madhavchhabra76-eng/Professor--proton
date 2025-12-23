@@ -4,7 +4,7 @@ import requests
 import time
 
 # -----------------------------------------------------------
-# PROFESSOR PROTON - MINI MODEL EDITION (Fast & Free) ⚡
+# PROFESSOR PROTON - CLEAN TEXT EDITION (No Stars) ✨
 # -----------------------------------------------------------
 
 st.set_page_config(page_title="Professor Proton", page_icon="⚛️", layout="centered")
@@ -119,7 +119,7 @@ if user_input:
         with st.spinner("Professor Proton is thinking..."):
             try:
                 # ----------------------------------------------------
-                # 🚨 IMPROVED PROMPT (Using Mini Model)
+                # 🚨 NO STARS PROMPT (Clean Text Only)
                 # ----------------------------------------------------
                 
                 if language == "Punjabi":
@@ -128,16 +128,20 @@ if user_input:
                         "\n\nSTRICT RULES:\n"
                         "1. Use simple, daily spoken Punjabi (Gurmukhi).\n"
                         "2. DO NOT translate technical terms. Write them in Gurmukhi. "
-                        "   (e.g., 'Force' -> 'ਫੋਰਸ', 'Gravity' -> 'ਗ੍ਰੈਵਿਟੀ', 'Reaction' -> 'ਰਿਐਕਸ਼ਨ').\n"
-                        "3. NO HINDI WORDS. Use 'Swaal' not 'Prashan'.\n"
-                        "4. Keep it brief and point-wise for exam prep."
+                        "   (e.g., 'Force' -> 'ਫੋਰਸ', 'Gravity' -> 'ਗ੍ਰੈਵਿਟੀ').\n"
+                        "3. NO HINDI WORDS.\n"
+                        "4. STRICTLY FORBIDDEN: Do NOT use asterisks (**), bold text, or markdown formatting. Use plain text only.\n"
+                        "5. Keep it brief and point-wise."
                     )
                     user_prompt = f"Explain this topic simply: {user_input}"
                 else:
-                    system_message = f"You are a professional Science Tutor for Class {selected_class}."
+                    system_message = (
+                        f"You are a professional Science Tutor for Class {selected_class}. "
+                        "STRICTLY FORBIDDEN: Do NOT use asterisks (**) or bold text."
+                    )
                     user_prompt = f"Question: '{user_input}'. Write a brief, precise answer for exam notes."
 
-                # 🚨 SWITCHED TO MINI MODEL (To bypass limit)
+                # Using Mini Model
                 completion = client.chat.completions.create(
                     model="gpt-4o-mini",
                     messages=[
