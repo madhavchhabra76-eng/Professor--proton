@@ -2,9 +2,10 @@ import streamlit as st
 from openai import OpenAI
 import requests
 import time
+from streamlit_lottie import st_lottie
 
 # -----------------------------------------------------------
-# PROFESSOR PROTON - CLEAN TEXT EDITION (No Stars) ✨
+# PROFESSOR PROTON - ANIMATED AVATAR EDITION 🤖
 # -----------------------------------------------------------
 
 st.set_page_config(page_title="Professor Proton", page_icon="⚛️", layout="centered")
@@ -42,7 +43,19 @@ client = OpenAI(
     api_key=st.secrets["GITHUB_TOKEN"],
 )
 
-# --- 3. GOOGLE SEARCH FUNCTION ---
+# --- 3. ANIMATION LOADER ---
+def load_lottieurl(url: str):
+    r = requests.get(url)
+    if r.status_code != 200:
+        return None
+    return r.json()
+
+# Load a cute "Science Robot" animation
+# You can change this URL to any Lottie file you like!
+lottie_url = "https://lottie.host/64c06283-8409-4ce4-a827-0201dc486806/H7e2M7L2Kq.json"
+lottie_avatar = load_lottieurl(lottie_url)
+
+# --- 4. GOOGLE SEARCH FUNCTION ---
 def get_google_images(search_query):
     if "GOOGLE_API_KEY" not in st.secrets or "GOOGLE_CX" not in st.secrets:
         return [], "Google keys missing."
@@ -74,7 +87,7 @@ def get_google_images(search_query):
     except Exception as e:
         return [], f"Error: {str(e)}"
 
-# --- 4. TEXT STREAMER ---
+# --- 5. TEXT STREAMER ---
 def stream_text(placeholder, text):
     current_text = ""
     for word in text.split():
@@ -85,8 +98,19 @@ def stream_text(placeholder, text):
     placeholder.markdown(final_html, unsafe_allow_html=True)
     return final_html
 
-# --- 5. UI HEADER ---
-st.title("Professor Proton ⚛️")
+# --- 6. UI HEADER & AVATAR ---
+col1, col2 = st.columns([1, 4])
+
+with col1:
+    if lottie_avatar:
+        st_lottie(lottie_avatar, height=100, key="avatar")
+    else:
+        st.write("🤖")
+
+with col2:
+    st.title("Professor Proton")
+    st.caption("Your Friendly Science AI Tutor")
+
 with st.expander("⚙️ Settings", expanded=False):
     selected_class = st.selectbox("Class", [6, 7, 8, 9, 10])
     language = st.radio("Language", ["English", "Punjabi"])
@@ -94,7 +118,7 @@ with st.expander("⚙️ Settings", expanded=False):
         st.session_state.messages = []
         st.rerun()
 
-# --- 6. HISTORY ---
+# --- 7. HISTORY ---
 if "messages" not in st.session_state: st.session_state.messages = []
 
 for msg in st.session_state.messages:
@@ -106,7 +130,7 @@ for msg in st.session_state.messages:
         else:
              st.markdown(msg["content"], unsafe_allow_html=True)
 
-# --- 7. MAIN LOGIC ---
+# --- 8. MAIN LOGIC ---
 user_input = st.chat_input("Ask a question...")
 
 if user_input:
@@ -116,10 +140,10 @@ if user_input:
     with st.chat_message("assistant"):
         answer_ph = st.empty()
         
-        with st.spinner("Professor Proton is thinking..."):
+        with st.spinner("Thinking..."):
             try:
                 # ----------------------------------------------------
-                # 🚨 NO STARS PROMPT (Clean Text Only)
+                # 🚨 NO STARS PROMPT (Mini Model)
                 # ----------------------------------------------------
                 
                 if language == "Punjabi":
@@ -163,7 +187,7 @@ if user_input:
             except Exception as e:
                 st.error(f"Error: {str(e)}")
 
-# --- 8. BUTTON ---
+# --- 9. BUTTON ---
 if "pending_search_query" in st.session_state:
     st.write("") 
     if "GOOGLE_API_KEY" in st.secrets:
